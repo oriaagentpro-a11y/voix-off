@@ -1,0 +1,8 @@
+{
+  "name": "Remix VoxStudio Pro - Studio Voix Off IA",
+  "description": "Générateur et station de travail de voix off professionnelle ultra-réaliste avec styles vocaux, multi-voix, studio de mastering et mixage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

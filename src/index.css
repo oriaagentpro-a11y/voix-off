@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+/* Thème monochrome clair : l'échelle zinc est inversée et l'ambre devient noir,
+   ce qui redessine tous les composants existants sans toucher à leur logique. */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --color-zinc-950: #e8e8eb;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #e4e4e7;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-600: #a1a1aa;
+  --color-zinc-500: #6b6b72;
+  --color-zinc-400: #52525b;
+  --color-zinc-300: #3f3f46;
+  --color-zinc-200: #27272a;
+  --color-zinc-100: #18181b;
+  --color-amber-500: #18181b;
+  --color-amber-400: #27272a;
+  --color-amber-300: #3f3f46;
+  --color-amber-200: #52525b;
+  --color-cyan-400: #3f3f46;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 0 #0000;
+  --shadow-xl: 0 0 #0000;
+}
+
+html { scroll-behavior: smooth; }
+body { background: #e8e8eb; color: #18181b; font-family: var(--font-sans); }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+* { scrollbar-width: thin; scrollbar-color: #a1a1aa transparent; }
+button:focus-visible, a:focus-visible, [role="menuitem"]:focus-visible { outline: 2px solid #18181b; outline-offset: 2px; }
+
+/* Cartes sombres : on restaure localement l'échelle sombre pour tout ce qui est à l'intérieur */
+.scope-dark {
+  --color-zinc-950: #18181b; --color-zinc-900: #232327; --color-zinc-800: #2e2e33; --color-zinc-700: #3f3f46;
+  --color-zinc-600: #52525b; --color-zinc-500: #a1a1aa; --color-zinc-400: #b4b4ba; --color-zinc-300: #d4d4d8;
+  --color-zinc-200: #e4e4e7; --color-zinc-100: #ffffff;
+  --color-amber-500: #ffffff; --color-amber-400: #f4f4f5; --color-amber-300: #e4e4e7; --color-amber-200: #d4d4d8;
+  --color-cyan-400: #d4d4d8;
+  color: #ffffff;
+}
