@@ -46,6 +46,18 @@ function makeAi(keys: string[]) {
     },
   };
 }
+const TTS_MODEL = process.env.GEMINI_TTS_MODEL || "gemini-3.8-flash-tts";
+const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-3.8-flash";
+
+// Limite simple : 10 tests de clé par minute et par adresse
+const testHits = new Map<string, number[]>();
+const tooMany = (ip: string) => {
+  const now = Date.now();
+  const hits = (testHits.get(ip) || []).filter((t) => now - t < 60000);
+  hits.push(now);
+  testHits.set(ip, hits);
+  return hits.length > 10;
+};
 const NO_KEY = "Aucune clé API Google configurée. Ajoutez-en une dans Outils > Clés API Google.";
 
 app.use(express.json({ limit: "50mb" }));
@@ -229,7 +241,7 @@ voiceRouter.post("/generate", async (req: Request, res: Response) => {
       });
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash-tts",
+        model: TTS_MODEL,
         contents: [
           {
             role: "user",
@@ -281,7 +293,7 @@ voiceRouter.post("/generate", async (req: Request, res: Response) => {
         mimeType: "audio/wav",
         voice: `${sp1Voice} & ${sp2Voice}`,
         style,
-        model: "gemini-3.8-flash-tts",
+        model: TTS_MODEL,
         hyperRealismLevel,
       });
     }
@@ -347,10 +359,11 @@ voiceRouter.post("/generate", async (req: Request, res: Response) => {
 
 // Test d'une clé
 voiceRouter.post("/test-key", async (req: Request, res: Response) => {
+  if (tooMany(req.ip || "inconnu")) return res.status(429).json({ ok: false, error: "Trop de tests, réessayez dans une minute." });
   const key = typeof req.body?.key === "string" ? req.body.key.trim() : "";
   if (!key) return res.status(400).json({ ok: false, error: "Clé manquante." });
   try {
-    await new GoogleGenAI({ apiKey: key }).models.generateContent({ model: "gemini-3.8-flash", contents: "Réponds : ok" });
+    await new GoogleGenAI({ apiKey: key }).models.generateContent({ model: TEXT_MODEL, contents: "Réponds : ok" });
     return res.json({ ok: true });
   } catch (e: any) {
     return res.json({ ok: false, error: String(e?.message || e).slice(0, 200) });
@@ -437,7 +450,7 @@ Ne renvoie que le texte optimisé directement sans préambule.`;
     const isJsonResponse = mode === "hyper-realism" || mode === "timing-variants";
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+      model: TEXT_MODEL,
       contents: [
         {
           role: "user",

@@ -1,20 +1,20 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# VoxStudio Pro — Studio de voix off IA
 
-# Run and deploy your AI Studio app
+Station de voix off ultra-réaliste (React + Vite + Tailwind, serveur Express, Google Gemini).
 
-This contains everything you need to run your app locally.
+## Lancer en local
+1. `npm install`
+2. `npm run dev`
+3. Ouvrir l'appli, puis **Outils > Clés API Google** pour ajouter une ou plusieurs clés.
+   (Alternative : `GEMINI_API_KEY` dans `.env.local`, voir `.env.example`.)
 
-View your app in AI Studio: https://ai.studio/apps/33f70762-6eca-4762-8d17-79dcf0216dec
+## Clés API Google
+- Nombre de clés illimité, activables/désactivables, avec bouton « Tester ».
+- Le serveur répartit les appels entre les clés actives et passe à la suivante en cas de quota, clé refusée ou service saturé.
+- Les clés sont stockées dans le navigateur (localStorage) et envoyées au serveur pour appeler Google : utiliser HTTPS en production.
+- Noms de modèles modifiables via `GEMINI_TTS_MODEL` et `GEMINI_TEXT_MODEL`.
 
-## Run Locally
+## Interface
+Navigation en haut (Voix, Presets, Mode Duo, Prises, Outils), recherche `Ctrl+K`, menus et curseurs sur mesure. Le thème monochrome est défini dans `src/index.css`.
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+© Marion de SOUZA — Tous droits réservés.
