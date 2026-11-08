@@ -6,6 +6,48 @@ dotenv.config();
 
 const app = express();
 
+
+// --- Clés API Google : transmises par l'appli (en-tête) et/ou GEMINI_API_KEY, avec rotation et repli ---
+function resolveKeys(req: Request): string[] {
+  const out: string[] = [];
+  const h = req.headers["x-gemini-api-keys"];
+  if (typeof h === "string") {
+    try {
+      const arr = JSON.parse(Buffer.from(h, "base64").toString("utf8"));
+      if (Array.isArray(arr)) for (const k of arr) if (typeof k === "string" && k.trim()) out.push(k.trim());
+    } catch {}
+  }
+  if (process.env.GEMINI_API_KEY) out.push(process.env.GEMINI_API_KEY);
+  return Array.from(new Set(out));
+}
+
+let rotation = 0;
+function makeAi(keys: string[]) {
+  const clients = keys.map(
+    (apiKey) => new GoogleGenAI({ apiKey, httpOptions: { headers: { "User-Agent": "aistudio-build" } } })
+  );
+  const start = rotation++ % clients.length;
+  return {
+    models: {
+      generateContent: async (args: any) => {
+        let last: any;
+        for (let i = 0; i < clients.length; i++) {
+          try {
+            return await clients[(start + i) % clients.length].models.generateContent(args);
+          } catch (e: any) {
+            last = e;
+            const m = String(e?.message || e);
+            // Quota, clé invalide ou service saturé : on passe à la clé suivante
+            if (!/429|quota|RESOURCE_EXHAUSTED|API key|API_KEY|PERMISSION|UNAUTHENTICATED|40[13]|503|overloaded/i.test(m)) throw e;
+          }
+        }
+        throw last;
+      },
+    },
+  };
+}
+const NO_KEY = "Aucune clé API Google configurée. Ajoutez-en une dans Outils > Clés API Google.";
+
 app.use(express.json({ limit: "50mb" }));
 
 // CORS & Preflight support
@@ -136,22 +178,12 @@ voiceRouter.get("/voices", (_req: Request, res: Response) => {
 // 2. Generate voiceover audio
 voiceRouter.post("/generate", async (req: Request, res: Response) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({
-        error:
-          "Clé GEMINI_API_KEY non configurée. Veuillez ajouter la variable GEMINI_API_KEY dans les paramètres Vercel (Settings > Environment Variables).",
-      });
+    const keys = resolveKeys(req);
+    if (!keys.length) {
+      return res.status(400).json({ error: NO_KEY });
     }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
+    const ai = makeAi(keys);
 
     const {
       text,
@@ -313,25 +345,27 @@ voiceRouter.post("/generate", async (req: Request, res: Response) => {
   }
 });
 
+// Test d'une clé
+voiceRouter.post("/test-key", async (req: Request, res: Response) => {
+  const key = typeof req.body?.key === "string" ? req.body.key.trim() : "";
+  if (!key) return res.status(400).json({ ok: false, error: "Clé manquante." });
+  try {
+    await new GoogleGenAI({ apiKey: key }).models.generateContent({ model: "gemini-3.8-flash", contents: "Réponds : ok" });
+    return res.json({ ok: true });
+  } catch (e: any) {
+    return res.json({ ok: false, error: String(e?.message || e).slice(0, 200) });
+  }
+});
+
 // 3. Optimize script
 voiceRouter.post("/optimize-script", async (req: Request, res: Response) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({
-        error:
-          "Clé GEMINI_API_KEY non configurée. Veuillez ajouter la variable GEMINI_API_KEY dans les paramètres Vercel (Settings > Environment Variables).",
-      });
+    const keys = resolveKeys(req);
+    if (!keys.length) {
+      return res.status(400).json({ error: NO_KEY });
     }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
+    const ai = makeAi(keys);
 
     const { script, mode, targetTone, language = "fr", voiceName } = req.body;
 

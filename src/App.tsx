@@ -12,6 +12,8 @@ import { TakesHistory } from "./components/TakesHistory";
 import { DialogueModeEditor } from "./components/DialogueModeEditor";
 import { TeleprompterModal } from "./components/TeleprompterModal";
 import { ScriptDoctorModal, DoctorMode } from "./components/ScriptDoctorModal";
+import { ApiKeysModal } from "./components/ApiKeysModal";
+import { apiFetch, activeKeys } from "./utils/apiKeys";
 import { StudioHelpModal } from "./components/StudioHelpModal";
 import {
   Mic,
@@ -171,6 +173,13 @@ export default function App() {
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState(false);
   const [isScriptDoctorOpen, setIsScriptDoctorOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isKeysOpen, setIsKeysOpen] = useState(false);
+  const [apiKeyCount, setApiKeyCount] = useState(() => activeKeys().length);
+  useEffect(() => {
+    const sync = () => setApiKeyCount(activeKeys().length);
+    window.addEventListener("voxstudio-keys", sync);
+    return () => window.removeEventListener("voxstudio-keys", sync);
+  }, []);
   const [doctorMode, setDoctorMode] = useState<DoctorMode>("hyper-realism");
 
   // Sync takes to localStorage
@@ -302,7 +311,7 @@ export default function App() {
         };
       }
 
-      const response = await fetch("/api/voice/generate", {
+      const response = await apiFetch("/api/voice/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -458,6 +467,8 @@ export default function App() {
         onOpenTeleprompter={() => setIsTeleprompterOpen(true)}
         onOpenScriptDoctor={(m) => { if (m) setDoctorMode(m); setIsScriptDoctorOpen(true); }}
         onOpenHelp={() => setIsHelpOpen(true)}
+        onOpenApiKeys={() => setIsKeysOpen(true)}
+        apiKeyCount={apiKeyCount}
         activeTakeCount={takes.length}
         voices={voices}
         selectedVoice={selectedVoice}
@@ -728,6 +739,8 @@ export default function App() {
         onApplyScript={(newText) => setScript(newText)}
         selectedVoiceName={selectedVoice}
       />
+
+      <ApiKeysModal isOpen={isKeysOpen} onClose={() => setIsKeysOpen(false)} />
 
       {/* Studio Help Modal */}
       <StudioHelpModal

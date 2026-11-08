@@ -1,3 +1,4 @@
+import { apiFetch } from "../utils/apiKeys";
 import React, { useRef, useState } from "react";
 import { estimateReadingTime } from "../utils/audio";
 import { Clock, Type, Sparkles, BookOpen, Trash2, Copy, Check, SlidersHorizontal, Wand2, Loader2, CheckCircle } from "lucide-react";
@@ -110,7 +111,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({
     setPolishMessage(null);
 
     try {
-      const res = await fetch("/api/voice/optimize-script", {
+      const res = await apiFetch("/api/voice/optimize-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

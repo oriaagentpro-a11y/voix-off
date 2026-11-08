@@ -1,3 +1,4 @@
+import { apiFetch } from "../utils/apiKeys";
 import { Select } from "./ui";
 import React, { useState, useEffect } from "react";
 import { Sparkles, X, Check, Clock, Languages, Wand2, Loader2, HeartHandshake, Mic2, FileText, CheckCircle2 } from "lucide-react";
@@ -49,7 +50,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
     setTimingVersions(null);
 
     try {
-      const res = await fetch("/api/voice/optimize-script", {
+      const res = await apiFetch("/api/voice/optimize-script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

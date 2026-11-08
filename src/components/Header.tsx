@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronRight, Wind, Mic2, Timer, Languages, Wand2, ChevronDown, Search, Sparkles, MonitorPlay, HelpCircle, Check, Mic, UserRound } from "lucide-react";
+import { ChevronRight, KeyRound, Wind, Mic2, Timer, Languages, Wand2, ChevronDown, Search, Sparkles, MonitorPlay, HelpCircle, Check, Mic, UserRound } from "lucide-react";
 import { VoiceInfo, StudioPreset } from "../types";
 import type { DoctorMode } from "./ScriptDoctorModal";
 
@@ -9,6 +9,8 @@ interface HeaderProps {
   onOpenTeleprompter: () => void;
   onOpenScriptDoctor: (mode?: DoctorMode) => void;
   onOpenHelp: () => void;
+  onOpenApiKeys: () => void;
+  apiKeyCount: number;
   activeTakeCount: number;
   voices: VoiceInfo[];
   selectedVoice: string;
@@ -158,6 +160,7 @@ export const Header: React.FC<HeaderProps> = (p) => {
     ] },
     { id: "prompteur", title: "Prompteur", desc: "Lecture plein écran", icon: <MonitorPlay className="w-4 h-4" />, onSelect: p.onOpenTeleprompter },
     { id: "guide", title: "Guide studio", desc: "Hyper-réalisme et acoustique", icon: <HelpCircle className="w-4 h-4" />, onSelect: p.onOpenHelp },
+    { id: "keys", title: "Clés API Google", desc: p.apiKeyCount ? `${p.apiKeyCount} clé(s) active(s)` : "Aucune clé : à configurer", icon: <KeyRound className="w-4 h-4" />, onSelect: p.onOpenApiKeys },
   ];
   const link = "px-4 py-2.5 rounded-full text-sm font-medium text-[#3f3f46] hover:bg-[#f4f4f5] cursor-pointer";
 
