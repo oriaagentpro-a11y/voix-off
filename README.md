@@ -5,6 +5,9 @@
 [![Vite 8](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Google Gemini API](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Electron](https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://www.apple.com/macos)
 [![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 
 > **VoxStudio Pro** est une station audionumérique (DAW) web de nouvelle génération dédiée à la production de voix off haute fidélité. Propulsée par les modèles multimodaux vocaux de **Google Gemini**, elle combine direction artistique assistée par IA, modélisation acoustique studio (DSP temps réel) et résilience multi-clés pour un rendu vivant, organique et indiscernable d'un comédien voix off en cabine insonorisée.
@@ -131,13 +134,38 @@ Ouvrez votre navigateur sur `http://localhost:3000`.
 
 ## 🛠️ Commandes Disponibles
 
+### 🌐 Mode Web & Serveur
 | Commande | Action |
 |---|---|
-| `npm run dev` | Lance le serveur de développement avec rechargement à chaud (HMR). |
+| `npm run dev` | Lance le serveur web de développement avec rechargement à chaud (HMR). |
 | `npm run build` | Compile l'application cliente optimisée pour la production dans le dossier `dist/`. |
 | `npm start` | Démarre le serveur Node.js en mode production (`NODE_ENV=production`). |
 | `npm run preview` | Prévisualise la version de production via le serveur Vite. |
 | `npm run lint` | Exécute la vérification statique des types TypeScript (`tsc --noEmit`). |
+
+### 💻 Mode Application Desktop (Windows & macOS)
+| Commande | Action |
+|---|---|
+| `npm run desktop:dev` | Démarre le serveur local et lance la fenêtre Electron en mode développement avec HMR. |
+| `npm run build:electron` | Compile le processus principal Electron et le backend Express dans `dist-electron/`. |
+| `npm run desktop:build:win` | Génère les exécutables Windows (installateur NSIS `.exe` et version portable `.exe`) dans le dossier `release/`. |
+| `npm run desktop:build:mac` | Génère les paquets macOS (image disque `.dmg` et archive `.zip` pour Apple Silicon et Intel) dans `release/`. |
+| `npm run desktop:build:all` | Compile et empaquette simultanément pour Windows et macOS. |
+
+---
+
+## 💻 Architecture de l'Application Desktop
+
+VoxStudio Pro est conçu pour s'exécuter de façon 100% autonome sur **Windows** et **macOS** sans nécessiter de configuration externe :
+
+1. **Serveur Backend Embarqué** : Au lancement de l'application, Electron démarre une instance interne et isolée du serveur Express sur l'adresse de bouclage locale `127.0.0.1` avec un port dynamique attribué automatiquement par le système d'exploitation. Aucun conflit de port n'est possible avec d'autres applications.
+2. **Performance Native & DSP** : Les flux audio Web Audio API bénéficient de l'accélération matérielle Chromium intégrée à Electron.
+3. **Menus & Raccourcis Système** :
+   * `Cmd/Ctrl + T` : Téléprompteur de lecture
+   * `Cmd/Ctrl + D` : Script Doctor & Coach de Réalisme IA
+   * `Cmd/Ctrl + K` : Gestionnaire de clés API Google
+   * Plein écran studio, zoom dynamique, inspecteur développeur
+4. **Sécurité Sandbox & Liens Externes** : Isolation du contexte active (`contextIsolation: true`) et ouverture automatique de tout lien web externe dans le navigateur système par défaut.
 
 ---
 

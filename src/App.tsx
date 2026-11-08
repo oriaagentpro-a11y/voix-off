@@ -182,6 +182,31 @@ export default function App() {
   }, []);
   const [doctorMode, setDoctorMode] = useState<DoctorMode>("hyper-realism");
 
+  // Desktop Menu Shortcuts & Actions Integration
+  useEffect(() => {
+    if (!window.voxStudioDesktop?.onMenuAction) return;
+
+    const unbindTeleprompter = window.voxStudioDesktop.onMenuAction("open-teleprompter", () => {
+      setIsTeleprompterOpen(true);
+    });
+    const unbindDoctor = window.voxStudioDesktop.onMenuAction("open-script-doctor", () => {
+      setIsScriptDoctorOpen(true);
+    });
+    const unbindKeys = window.voxStudioDesktop.onMenuAction("open-api-keys", () => {
+      setIsKeysOpen(true);
+    });
+    const unbindHelp = window.voxStudioDesktop.onMenuAction("open-about-modal", () => {
+      setIsHelpOpen(true);
+    });
+
+    return () => {
+      unbindTeleprompter();
+      unbindDoctor();
+      unbindKeys();
+      unbindHelp();
+    };
+  }, []);
+
   // Sync takes to localStorage
   useEffect(() => {
     try {
