@@ -1,3 +1,4 @@
+import { Slider } from "./ui";
 import React, { useRef, useState, useEffect } from "react";
 import { formatTimecode, extractWaveformData, buildMasteringNodes, renderMasteredAudioBlob, createAmbientSynthesizer } from "../utils/audio";
 import { StudioSettings } from "../types";
@@ -442,7 +443,7 @@ export const AudioWaveformVisualizer: React.FC<AudioWaveformVisualizerProps> = (
   };
 
   return (
-    <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-4 sm:p-5 shadow-2xl flex flex-col gap-4">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-4">
       {/* Hidden audio element with crossOrigin for Web Audio graph processing */}
       {audioUrl && (
         <audio
@@ -495,7 +496,7 @@ export const AudioWaveformVisualizer: React.FC<AudioWaveformVisualizerProps> = (
             type="button"
             onClick={handleExportMaster}
             disabled={!audioUrl || isExportingMaster}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-black text-xs transition-all shadow-md shadow-amber-500/20 disabled:opacity-30 disabled:pointer-events-none"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-semibold text-xs transition-all shadow-md shadow-amber-500/20 disabled:opacity-30 disabled:pointer-events-none"
             title="Exporter le fichier WAV Masterisé 24kHz avec égalisation et compression studio"
           >
             {isExportingMaster ? (
@@ -684,15 +685,7 @@ export const AudioWaveformVisualizer: React.FC<AudioWaveformVisualizerProps> = (
                 <Volume2 className="w-4 h-4" />
               )}
             </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-              className="w-16 h-1.5 bg-zinc-800 accent-amber-500 rounded-lg cursor-pointer"
-            />
+            <Slider className="!w-16" label="Volume" min={0} max={1} step={0.05} value={isMuted ? 0 : volume} onChange={(v) => handleVolumeChange(v)} />
           </div>
         </div>
       </div>

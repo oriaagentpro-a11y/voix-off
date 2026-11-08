@@ -1,3 +1,4 @@
+import { Slider } from "./ui";
 import React, { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, X, FlipHorizontal, Type, Gauge } from "lucide-react";
 
@@ -60,11 +61,11 @@ export const TeleprompterModal: React.FC<TeleprompterModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col select-none">
+    <div className="scope-dark fixed inset-0 z-50 bg-black flex flex-col select-none">
       {/* Top Floating Control Bar */}
       <div className="bg-zinc-950/90 border-b border-zinc-800 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-amber-400 font-bold uppercase tracking-wider text-xs">
+          <span className="text-amber-400 font-bold tracking-normal text-xs">
             Prompteur Studio
           </span>
           <span className="text-zinc-500 text-xs hidden sm:inline font-mono">
@@ -96,15 +97,7 @@ export const TeleprompterModal: React.FC<TeleprompterModalProps> = ({
           {/* Speed slider */}
           <div className="flex items-center gap-1.5 bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-xs text-zinc-400">
             <Gauge className="w-3.5 h-3.5 text-amber-400" />
-            <input
-              type="range"
-              min="1"
-              max="6"
-              step="0.5"
-              value={scrollSpeed}
-              onChange={(e) => setScrollSpeed(parseFloat(e.target.value))}
-              className="w-16 h-1 bg-zinc-800 accent-amber-500 rounded cursor-pointer"
-            />
+            <Slider className="!w-28" label="Vitesse de défilement" min={1} max={6} step={0.5} value={scrollSpeed} onChange={(v) => setScrollSpeed(v)} />
             <span className="font-mono text-[11px] text-zinc-300 w-6 text-right">
               {scrollSpeed}x
             </span>
@@ -113,15 +106,7 @@ export const TeleprompterModal: React.FC<TeleprompterModalProps> = ({
           {/* Font size */}
           <div className="flex items-center gap-1.5 bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-xs text-zinc-400">
             <Type className="w-3.5 h-3.5 text-cyan-400" />
-            <input
-              type="range"
-              min="24"
-              max="56"
-              step="4"
-              value={fontSize}
-              onChange={(e) => setFontSize(parseInt(e.target.value))}
-              className="w-16 h-1 bg-zinc-800 accent-cyan-400 rounded cursor-pointer"
-            />
+            <Slider className="!w-28" label="Taille du texte" min={24} max={56} step={4} value={fontSize} onChange={(v) => setFontSize(v)} />
           </div>
 
           {/* Mirror toggle for teleprompter glass */}

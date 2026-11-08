@@ -1,3 +1,4 @@
+import { Slider } from "./ui";
 import React, { useState, useEffect, useRef } from "react";
 import { StudioSettings, EqPreset, AmbientTrackId, HyperRealismProfile } from "../types";
 import { createAmbientSynthesizer } from "../utils/audio";
@@ -83,12 +84,12 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800 p-4 sm:p-5 shadow-xl flex flex-col gap-5">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-5">
       {/* Rack Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-3">
         <div className="flex items-center gap-2">
           <Sliders className="w-4 h-4 text-amber-400" />
-          <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
+          <h3 className="text-sm font-bold text-zinc-100 tracking-normal">
             Rack de Traitement Studio & Hyper-Réalisme
           </h3>
         </div>
@@ -103,7 +104,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
       {/* Profil d'Acoustique Hyper-Réaliste */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+          <label className="text-xs font-semibold tracking-normal text-amber-300 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>Profil Acoustique & Intention Réaliste</span>
           </label>
@@ -122,7 +123,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
                 onClick={() => onChangeSettings({ ...settings, hyperRealismProfile: prof.id })}
                 className={`text-left p-2.5 rounded-xl border text-xs transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-amber-500/15 border-amber-500/80 text-zinc-100 shadow-sm shadow-amber-500/10 ring-1 ring-amber-500/30"
+                    ? "bg-zinc-100/10 border-zinc-100 text-zinc-100 shadow-sm shadow-amber-500/10 ring-1 ring-amber-500/30"
                     : "bg-zinc-950/60 hover:bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700"
                 }`}
               >
@@ -141,7 +142,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-zinc-800/80">
         {/* Equalization Presets */}
         <div className="space-y-2.5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+          <label className="text-xs font-semibold tracking-normal text-zinc-300 flex items-center gap-1.5">
             <Waves className="w-3.5 h-3.5 text-amber-400" />
             <span>Égalisation Vocale (EQ Studio)</span>
           </label>
@@ -156,7 +157,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
                   onClick={() => onChangeSettings({ ...settings, eqPreset: eq.id })}
                   className={`text-left p-2 rounded-xl border text-xs transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-amber-500/15 border-amber-500/70 text-zinc-100 shadow-sm ring-1 ring-amber-500/20"
+                      ? "bg-zinc-100/10 border-zinc-100 text-zinc-100 shadow-sm ring-1 ring-amber-500/20"
                       : "bg-zinc-950/60 hover:bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700"
                   }`}
                 >
@@ -183,17 +184,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
                   {Math.round((settings.proximityWarmth || 0.4) * 100)}%
                 </span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={settings.proximityWarmth ?? 0.4}
-                onChange={(e) =>
-                  onChangeSettings({ ...settings, proximityWarmth: parseFloat(e.target.value) })
-                }
-                className="w-full h-1.5 bg-zinc-800 accent-amber-400 rounded-lg cursor-pointer"
-              />
+              <Slider min={0} max={1} step={0.05} value={settings.proximityWarmth ?? 0.4} onChange={(v) => onChangeSettings({ ...settings, proximityWarmth: v })} />
             </div>
 
             {/* Silky air band */}
@@ -207,17 +198,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
                   {Math.round((settings.airClarity || 0.5) * 100)}%
                 </span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={settings.airClarity ?? 0.5}
-                onChange={(e) =>
-                  onChangeSettings({ ...settings, airClarity: parseFloat(e.target.value) })
-                }
-                className="w-full h-1.5 bg-zinc-800 accent-cyan-400 rounded-lg cursor-pointer"
-              />
+              <Slider min={0} max={1} step={0.05} value={settings.airClarity ?? 0.5} onChange={(v) => onChangeSettings({ ...settings, airClarity: v })} />
             </div>
           </div>
         </div>
@@ -233,7 +214,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
               }
               className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                 settings.studioCompression
-                  ? "bg-amber-500/15 border-amber-500/70 text-amber-300 ring-1 ring-amber-500/30"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/30"
                   : "bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:text-zinc-300"
               }`}
             >
@@ -252,24 +233,14 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
                   {Math.round((settings.reverbAmount || 0.12) * 100)}%
                 </span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="0.4"
-                step="0.02"
-                value={settings.reverbAmount ?? 0.12}
-                onChange={(e) =>
-                  onChangeSettings({ ...settings, reverbAmount: parseFloat(e.target.value) })
-                }
-                className="w-full h-1.5 bg-zinc-800 accent-amber-400 rounded-lg cursor-pointer mt-1"
-              />
+              <Slider min={0} max={0.4} step={0.02} value={settings.reverbAmount ?? 0.12} onChange={(v) => onChangeSettings({ ...settings, reverbAmount: v })} />
             </div>
           </div>
 
           {/* Ambient Music Bed with Preview */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+              <label className="text-xs font-semibold tracking-normal text-zinc-300 flex items-center gap-1.5">
                 <Music className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Nappe Sonore & Ambiance</span>
               </label>
@@ -333,17 +304,7 @@ export const StudioDspRack: React.FC<StudioDspRackProps> = ({
               <div className="pt-1 flex items-center gap-2 text-xs">
                 <Volume2 className="w-3.5 h-3.5 text-zinc-400" />
                 <span className="text-zinc-400 text-[11px]">Volume fond :</span>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.8"
-                  step="0.05"
-                  value={settings.ambientVolume}
-                  onChange={(e) =>
-                    onChangeSettings({ ...settings, ambientVolume: parseFloat(e.target.value) })
-                  }
-                  className="flex-1 h-1 bg-zinc-800 accent-cyan-400 rounded-lg cursor-pointer"
-                />
+                <Slider min={0.05} max={0.8} step={0.05} value={settings.ambientVolume} onChange={(v) => onChangeSettings({ ...settings, ambientVolume: v })} />
                 <span className="text-[10px] font-mono text-cyan-400 w-8 text-right">
                   {Math.round(settings.ambientVolume * 100)}%
                 </span>

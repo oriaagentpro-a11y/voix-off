@@ -1,3 +1,4 @@
+import { Select } from "./ui";
 import React, { useState, useEffect } from "react";
 import { Sparkles, X, Check, Clock, Languages, Wand2, Loader2, HeartHandshake, Mic2, FileText, CheckCircle2 } from "lucide-react";
 
@@ -108,7 +109,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-sm font-bold text-zinc-100 tracking-normal flex items-center gap-2">
                 <span>Coach Voix Off & Direction Artistique</span>
                 <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono">
                   Perfectionnisme
@@ -138,7 +139,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               onClick={() => setMode("hyper-realism")}
               className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
                 mode === "hyper-realism"
-                  ? "bg-amber-500/15 border-amber-500/80 text-amber-300 ring-1 ring-amber-500/40 shadow-sm"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/40 shadow-sm"
                   : "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -152,7 +153,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               onClick={() => setMode("pacing")}
               className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
                 mode === "pacing"
-                  ? "bg-amber-500/15 border-amber-500/80 text-amber-300 ring-1 ring-amber-500/40"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/40"
                   : "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -166,7 +167,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               onClick={() => setMode("timing-variants")}
               className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
                 mode === "timing-variants"
-                  ? "bg-amber-500/15 border-amber-500/80 text-amber-300 ring-1 ring-amber-500/40"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/40"
                   : "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -180,7 +181,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               onClick={() => setMode("translate")}
               className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
                 mode === "translate"
-                  ? "bg-amber-500/15 border-amber-500/80 text-amber-300 ring-1 ring-amber-500/40"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/40"
                   : "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -194,7 +195,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               onClick={() => setMode("polish")}
               className={`p-2.5 rounded-xl border text-xs font-medium text-left transition-all cursor-pointer ${
                 mode === "polish"
-                  ? "bg-amber-500/15 border-amber-500/80 text-amber-300 ring-1 ring-amber-500/40"
+                  ? "bg-zinc-100/10 border-zinc-100 text-amber-300 ring-1 ring-amber-500/40"
                   : "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200"
               }`}
             >
@@ -209,19 +210,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
             {mode === "translate" ? (
               <div className="flex items-center gap-2 flex-1">
                 <span className="text-zinc-400 font-medium">Langue cible :</span>
-                <select
-                  value={targetLang}
-                  onChange={(e) => setTargetLang(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-700 text-zinc-200 rounded px-2.5 py-1 focus:outline-none"
-                >
-                  <option value="Anglais (US)">Anglais (US)</option>
-                  <option value="Anglais (UK)">Anglais (UK)</option>
-                  <option value="Espagnol">Espagnol</option>
-                  <option value="Allemand">Allemand</option>
-                  <option value="Italien">Italien</option>
-                  <option value="Portugais">Portugais</option>
-                  <option value="Japonais">Japonais</option>
-                </select>
+                <Select className="w-48" label="Langue cible" value={targetLang} onChange={setTargetLang} options={["Anglais (US)","Anglais (UK)","Espagnol","Allemand","Italien","Portugais","Japonais"].map((l) => ({ value: l, label: l }))} />
               </div>
             ) : (
               <div className="flex items-center gap-2 flex-1">
@@ -240,7 +229,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               type="button"
               onClick={handleRunOptimizer}
               disabled={isLoading || !script}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-black text-xs shadow-md transition-all cursor-pointer disabled:opacity-40"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-semibold text-xs shadow-md transition-all cursor-pointer disabled:opacity-40"
             >
               {isLoading ? (
                 <>
@@ -282,7 +271,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
               {/* Improvements list */}
               {realismData.realismImprovements && realismData.realismImprovements.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">
+                  <div className="text-[11px] font-semibold text-zinc-300 tracking-normal">
                     Ajustements physiologiques et oraux appliqués :
                   </div>
                   <ul className="space-y-1">
@@ -313,7 +302,7 @@ export const ScriptDoctorModal: React.FC<ScriptDoctorModalProps> = ({
           {/* Timing versions results */}
           {timingVersions && (
             <div className="space-y-3 pt-2">
-              <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-zinc-300 tracking-normal">
                 Versions Minutées Calibrées :
               </h4>
 

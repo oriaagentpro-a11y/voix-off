@@ -49,7 +49,7 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+        <label className="text-xs font-semibold tracking-normal text-zinc-300 flex items-center gap-1.5">
           <User className="w-3.5 h-3.5 text-amber-400" />
           <span>Comédiens Voix Off Hyper-Réalistes</span>
         </label>
@@ -70,15 +70,15 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
               onClick={() => !disabled && onSelectVoice(voice.id)}
               className={`relative group rounded-xl p-3.5 border transition-all cursor-pointer text-left flex flex-col justify-between select-none ${
                 isSelected
-                  ? "bg-gradient-to-b from-amber-500/15 via-zinc-900 to-zinc-900 border-amber-500/90 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40"
-                  : "bg-zinc-900/70 hover:bg-zinc-900 border-zinc-800/80 hover:border-zinc-700 text-zinc-300"
+                  ? "scope-dark bg-zinc-950 border-zinc-950"
+                  : "bg-zinc-800/60 hover:bg-zinc-800 border-transparent text-zinc-300"
               } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {/* Top of Card */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-black text-zinc-100 group-hover:text-amber-300 transition-colors">
+                    <span className="text-sm font-semibold text-zinc-100 group-hover:text-amber-300 transition-colors">
                       {voice.name}
                     </span>
                     <span

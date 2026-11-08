@@ -150,12 +150,12 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800 p-4 sm:p-5 flex flex-col gap-4 shadow-xl">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-4 shadow-xl">
       {/* Top Header: Title & Templates */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></div>
-          <h2 className="text-sm font-black text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-zinc-100 tracking-normal flex items-center gap-2">
             <span>Script de Voix Off</span>
             <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
               HD Prosodie
@@ -198,7 +198,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({
 
             {/* Dropdown menu */}
             <div className="absolute right-0 top-full mt-1 w-72 p-2 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl hidden group-hover:block group-focus-within:block z-30">
-              <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-800 pb-1 mb-1">
+              <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 tracking-normal border-b border-zinc-800 pb-1 mb-1">
                 Scripts calibrés pour l'hyper-réalisme
               </div>
               {TEMPLATES.map((tmpl, idx) => (
@@ -273,7 +273,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({
       {/* Cue Markers Insertion Bar (Hyper-Realism acoustic cues) */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-800/60">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mr-1">
+          <span className="text-[10px] text-zinc-400 font-bold tracking-normal mr-1">
             Balises de Réalisme Humain :
           </span>
           <button
@@ -346,7 +346,7 @@ export const ScriptEditor: React.FC<ScriptEditorProps> = ({
 
       {/* Direction & Tone Selection */}
       <div className="pt-2 border-t border-zinc-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+        <label className="text-xs font-semibold text-zinc-400 tracking-normal flex items-center gap-1.5 whitespace-nowrap">
           <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
           <span>Direction Vocale & Réalisme :</span>
         </label>

@@ -63,11 +63,11 @@ export const TakesHistory: React.FC<TakesHistoryProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800 p-4 sm:p-5 shadow-xl flex flex-col gap-3">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-3">
       <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
           <ListMusic className="w-4 h-4 text-amber-400" />
-          <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
+          <h3 className="text-sm font-bold text-zinc-100 tracking-normal">
             Historique des Prises ({takes.length})
           </h3>
         </div>
@@ -94,8 +94,8 @@ export const TakesHistory: React.FC<TakesHistoryProps> = ({
                 onClick={() => onSelectTake(take)}
                 className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${
                   isSelected
-                    ? "bg-amber-500/10 border-amber-500/60 ring-1 ring-amber-500/20"
-                    : "bg-zinc-950/60 hover:bg-zinc-950 border-zinc-800 hover:border-zinc-700"
+                    ? "bg-zinc-100/10 border-zinc-100"
+                    : "bg-zinc-900 hover:bg-zinc-800/50 border-zinc-700"
                 }`}
               >
                 {/* Left info & inline play */}
@@ -106,7 +106,7 @@ export const TakesHistory: React.FC<TakesHistoryProps> = ({
                       e.stopPropagation();
                       toggleInlinePlay(take);
                     }}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
                       isPlayingThis
                         ? "bg-amber-500 text-zinc-950"
                         : "bg-zinc-800 hover:bg-zinc-700 text-zinc-200"

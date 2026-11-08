@@ -1,3 +1,4 @@
+import { Select } from "./ui";
 import React from "react";
 import { DialogueLine } from "../types";
 import { Users, Plus, Trash2, Mic, Sparkles, MessageSquare } from "lucide-react";
@@ -58,12 +59,12 @@ export const DialogueModeEditor: React.FC<DialogueModeEditorProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900/80 rounded-2xl border border-zinc-800 p-4 sm:p-5 shadow-xl flex flex-col gap-4">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-amber-400" />
-          <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-sm font-bold text-zinc-100 tracking-normal flex items-center gap-2">
             <span>Scénario Dual Gemini 3.8 Flash-TTS</span>
             <span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded font-bold">
               Flagship
@@ -99,17 +100,7 @@ export const DialogueModeEditor: React.FC<DialogueModeEditorProps> = ({
               <Mic className="w-3.5 h-3.5" />
               Intervenant 1
             </span>
-            <select
-              value={speaker1Voice}
-              onChange={(e) => setSpeaker1Voice(e.target.value as any)}
-              className="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded px-2 py-0.5 focus:outline-none cursor-pointer"
-            >
-              {AVAILABLE_VOICES.map((v) => (
-                <option key={v} value={v}>
-                  Voix : {v}
-                </option>
-              ))}
-            </select>
+            <Select className="w-40" label="Voix" value={speaker1Voice} onChange={(v) => setSpeaker1Voice(v as any)} options={AVAILABLE_VOICES.map((v) => ({ value: v, label: `Voix : ${v}` }))} />
           </div>
 
           <div className="flex gap-2">
@@ -137,17 +128,7 @@ export const DialogueModeEditor: React.FC<DialogueModeEditorProps> = ({
               <Mic className="w-3.5 h-3.5" />
               Intervenant 2
             </span>
-            <select
-              value={speaker2Voice}
-              onChange={(e) => setSpeaker2Voice(e.target.value as any)}
-              className="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded px-2 py-0.5 focus:outline-none cursor-pointer"
-            >
-              {AVAILABLE_VOICES.map((v) => (
-                <option key={v} value={v}>
-                  Voix : {v}
-                </option>
-              ))}
-            </select>
+            <Select className="w-40" label="Voix" value={speaker2Voice} onChange={(v) => setSpeaker2Voice(v as any)} options={AVAILABLE_VOICES.map((v) => ({ value: v, label: `Voix : ${v}` }))} />
           </div>
 
           <div className="flex gap-2">
@@ -172,7 +153,7 @@ export const DialogueModeEditor: React.FC<DialogueModeEditorProps> = ({
       {/* Script Lines Timeline */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between text-xs text-zinc-400">
-          <span className="font-semibold uppercase tracking-wider">Répliques & Réactions :</span>
+          <span className="font-semibold tracking-normal">Répliques & Réactions :</span>
           <span>{lines.length} répliques</span>
         </div>
 

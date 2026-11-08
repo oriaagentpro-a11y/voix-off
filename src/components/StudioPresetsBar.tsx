@@ -87,16 +87,16 @@ export const StudioPresetsBar: React.FC<StudioPresetsBarProps> = ({
   };
 
   return (
-    <div className="bg-zinc-900/90 rounded-2xl border border-zinc-800 p-4 sm:p-5 shadow-2xl flex flex-col gap-4">
+    <div className="bg-zinc-900 rounded-[28px] p-5 sm:p-6 flex flex-col gap-4">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-zinc-950 font-black shadow-md shadow-amber-500/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-zinc-950 font-semibold shadow-md shadow-amber-500/20">
             <Layers className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-black text-zinc-100 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-zinc-100 tracking-normal">
                 Paramètres Prédéfinis Studio (1-Clic)
               </h2>
               <span className="text-[10px] bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold px-2 py-0.5 rounded uppercase">
@@ -144,7 +144,7 @@ export const StudioPresetsBar: React.FC<StudioPresetsBarProps> = ({
                   onClick={() => setSelectedCategory(cat)}
                   className={`text-xs px-3 py-1.5 rounded-xl font-semibold whitespace-nowrap transition-all cursor-pointer border ${
                     isSelected
-                      ? "bg-amber-500 text-zinc-950 border-amber-400 shadow-md shadow-amber-500/20 font-black"
+                      ? "bg-amber-500 text-zinc-950 border-amber-400 shadow-md shadow-amber-500/20 font-semibold"
                       : "bg-zinc-950/70 text-zinc-400 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700"
                   }`}
                 >
@@ -201,7 +201,7 @@ export const StudioPresetsBar: React.FC<StudioPresetsBarProps> = ({
                       </div>
 
                       {isActive && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500 text-zinc-950 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0 shadow-sm">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500 text-zinc-950 text-[10px] font-semibold tracking-normal flex items-center gap-1 shrink-0 shadow-sm">
                           <Check className="w-3 h-3 stroke-[3]" />
                           Actif
                         </span>

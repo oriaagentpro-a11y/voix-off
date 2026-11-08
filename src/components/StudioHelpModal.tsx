@@ -16,7 +16,7 @@ export const StudioHelpModal: React.FC<StudioHelpModalProps> = ({ isOpen, onClos
         <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-zinc-100 tracking-normal">
               Guide d'Hyper-Réalisme & Perfectionnisme Studio
             </h3>
           </div>
