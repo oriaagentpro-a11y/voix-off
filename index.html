@@ -1,18 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VoxStudio Pro - Studio Voix Off IA</title>
-    <meta name="description" content="Générateur et station de travail de voix off professionnelle ultra-réaliste avec styles vocaux, multi-voix, studio de mastering et mixage." />
-    <meta property="og:title" content="VoxStudio Pro - Studio Voix Off IA" />
-    <meta property="og:description" content="Générateur et station de travail de voix off professionnelle ultra-réaliste avec styles vocaux, multi-voix, studio de mastering et mixage." />
+    <title>VoxStudio Pro — Studio de voix off</title>
+    <meta name="description" content="Écrivez, choisissez une voix et générez une voix off réaliste en français, puis réglez le rendu et exportez-la en WAV." />
+    <meta property="og:title" content="VoxStudio Pro — Studio de voix off" />
+    <meta property="og:description" content="Écrivez, choisissez une voix et générez une voix off réaliste en français, puis réglez le rendu et exportez-la en WAV." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Applique le thème mémorisé avant le premier rendu (évite le flash).
+      try {
+        var t = localStorage.getItem("voxstudio_theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

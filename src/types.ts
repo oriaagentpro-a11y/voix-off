@@ -54,10 +54,12 @@ export interface StudioSettings {
   hyperRealismLevel: "standard" | "high" | "ultra_perfection";
 }
 
+export type VoiceId = "Kore" | "Puck" | "Zephyr" | "Fenrir" | "Charon";
+
 export interface DialogueLine {
   id: string;
   speaker: string;
-  voice: "Kore" | "Puck" | "Zephyr" | "Fenrir" | "Charon";
+  voice: VoiceId;
   text: string;
   style?: string;
 }

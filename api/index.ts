@@ -58,7 +58,7 @@ const tooMany = (ip: string) => {
   testHits.set(ip, hits);
   return hits.length > 10;
 };
-const NO_KEY = "Aucune clé API Google configurée. Ajoutez-en une dans Outils > Clés API Google.";
+const NO_KEY = "Aucune clé API Google configurée. Ajoutez-en une dans Réglages › Clés API Google.";
 
 app.use(express.json({ limit: "50mb" }));
 

@@ -58,6 +58,20 @@
 
 ---
 
+## 🧭 Interface
+
+L'application est organisée en **cinq espaces** accessibles depuis la barre latérale (onglets en bas sur mobile) et un **lecteur fixe** commun :
+
+| Espace | Rôle |
+|---|---|
+| **Studio** | Écrire le script (Solo ou Duo), choisir la voix, générer. La carte « Générer » compare la durée estimée au format cible (15 / 30 / 60 s). |
+| **Préréglages** | Points de départ par type de projet (voix, direction de jeu, mixage). |
+| **Prises** | Historique : écoute, favoris, recherche, téléchargement, reprise du texte. |
+| **Mixage** | Interprétation, égalisation, micro, dynamique, fond sonore — audibles en direct. |
+| **Réglages** | Clés API Google, thème clair / sombre / système, aide et raccourcis. |
+
+Accessibilité visée : WCAG 2.2 AA (contrastes vérifiés, navigation complète au clavier, dialogues à focus piégé, annonces `aria-live`). Raccourcis : `Ctrl + Entrée` générer, `Espace` lecture / pause.
+
 ## 🏗️ Architecture & Technologies
 
 ```
@@ -65,12 +79,13 @@ voxstudio-pro-refonte/
 ├── api/
 │   └── index.ts             # API Express, passerelle Gemini SDK, rotation des clés & TTS
 ├── src/
-│   ├── components/          # Composants UI React (Header, ScriptEditor, DSP Rack, etc.)
+│   ├── components/          # Coquille (AppShell), lecteur fixe (PlayerDock), cartes du Studio, ui.tsx (design system)
+│   ├── views/               # Les 5 espaces : Studio, Préréglages, Prises, Mixage, Réglages
 │   ├── data/                # Presets de production thématiques (Publicité, Cinéma, Luxe...)
 │   ├── utils/               # Moteur Web Audio API, traitement DSP, stockage des clés
 │   ├── types.ts             # Définitions TypeScript complètes
 │   ├── App.tsx              # Composant racine & orchestration de l'état du studio
-│   └── index.css            # Design System monochrome haut de gamme Tailwind CSS v4
+│   └── index.css            # Jetons sémantiques (thèmes clair / sombre / système) pour Tailwind CSS v4
 ├── server.ts                # Serveur de développement et d'exécution hybride Vite / Express
 └── package.json             # Dépendances et scripts
 ```

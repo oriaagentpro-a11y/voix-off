@@ -1,777 +1,422 @@
-import React, { useState, useEffect } from "react";
-import { VoiceInfo, VoiceTake, StudioSettings, DialogueLine, StudioPreset } from "./types";
-import { base64ToAudioUrl } from "./utils/audio";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { VoiceInfo, VoiceTake, StudioSettings, DialogueLine, StudioPreset, VoiceId } from "./types";
+import { base64ToAudioUrl, estimateReadingTime } from "./utils/audio";
 import { STUDIO_PRESETS } from "./data/presets";
-import { Header } from "./components/Header";
-import { StudioPresetsBar } from "./components/StudioPresetsBar";
-import { VoiceSelector } from "./components/VoiceSelector";
-import { ScriptEditor } from "./components/ScriptEditor";
-import { AudioWaveformVisualizer } from "./components/AudioWaveformVisualizer";
-import { StudioDspRack } from "./components/StudioDspRack";
-import { TakesHistory } from "./components/TakesHistory";
-import { DialogueModeEditor } from "./components/DialogueModeEditor";
-import { TeleprompterModal } from "./components/TeleprompterModal";
-import { ScriptDoctorModal, DoctorMode } from "./components/ScriptDoctorModal";
-import { ApiKeysModal } from "./components/ApiKeysModal";
 import { apiFetch, activeKeys } from "./utils/apiKeys";
-import { StudioHelpModal } from "./components/StudioHelpModal";
-import {
-  Mic,
-  Loader2,
-  AlertCircle,
-  Sparkles,
-  CheckCircle,
-  Radio,
-  SlidersHorizontal,
-  Flame,
-  ShieldCheck,
-  Cpu,
-  BookmarkCheck,
-  Layers,
-} from "lucide-react";
+import { AppShell, ViewId } from "./components/AppShell";
+import { PlayerDock, PlayerHandle } from "./components/PlayerDock";
+import { ScriptEditor } from "./components/ScriptEditor";
+import { DialogueModeEditor } from "./components/DialogueModeEditor";
+import { VoiceSelector } from "./components/VoiceSelector";
+import { GenerateCard, ModelMode, TargetFormat } from "./components/GenerateCard";
+import { TeleprompterModal } from "./components/TeleprompterModal";
+import { ScriptDoctorModal } from "./components/ScriptDoctorModal";
+import { Segmented, Toast, Toasts } from "./components/ui";
+import { StudioView, KeyBanner, RecentTakes } from "./views/StudioView";
+import { PresetsView } from "./views/PresetsView";
+import { TakesView } from "./views/TakesView";
+import { MixView } from "./views/MixView";
+import { SettingsView, ThemePref } from "./views/SettingsView";
+import { User, Users } from "lucide-react";
 
 const INITIAL_VOICES: VoiceInfo[] = [
   {
-    id: "Kore",
-    name: "Kore",
-    gender: "femme",
-    tone: "Chaleureuse, soyeuse & narrative (Ultra-Réaliste)",
-    description: "Voix féminine d'exception avec un grain soyeux, une diction française irréprochable et un timbre feutré intimiste de studio haut de gamme.",
-    recommendedFor: ["Documentaires", "Luxe & Beauté", "E-learning", "Méditation", "Corporate Prestige"],
-    previewSampleText: "Bienvenue dans un nouvel univers sonore où chaque souffle et chaque mot vibrent d'une humanité absolue.",
-    timbreProfile: "Mezzo-soprano soyeuse, texture feutrée, présence harmonique riche",
-    frequencyRange: "180 Hz - 7.5 kHz",
+    id: "Kore", name: "Kore", gender: "femme",
+    tone: "Chaleureuse, soyeuse et narrative",
+    description: "Voix féminine au grain soyeux, diction française soignée et timbre feutré.",
+    recommendedFor: ["Documentaires", "Luxe et beauté", "E-learning", "Méditation", "Corporate"],
+    previewSampleText: "Bienvenue dans un nouvel univers sonore où chaque mot compte.",
   },
   {
-    id: "Puck",
-    name: "Puck",
-    gender: "homme",
-    tone: "Dynamique, percutant & moderne (Ultra-Réaliste)",
-    description: "Voix masculine jeune, vivante et entraînante. Énergie communicative, sourire audible et timing percutant idéal pour captiver instantanément.",
-    recommendedFor: ["Publicités TV/Radio", "Startups Tech", "Podcasts", "Gaming", "Réseaux sociaux"],
-    previewSampleText: "Passez à la vitesse supérieure dès aujourd'hui avec une expérience sonore d'un réalisme saisissant.",
-    timbreProfile: "Ténor clair et percussif, projection dynamique, modulation rapide",
-    frequencyRange: "120 Hz - 8 kHz",
+    id: "Puck", name: "Puck", gender: "homme",
+    tone: "Dynamique, percutant et moderne",
+    description: "Voix masculine jeune et vivante, sourire audible et rythme entraînant.",
+    recommendedFor: ["Publicités", "Startups tech", "Podcasts", "Gaming", "Réseaux sociaux"],
+    previewSampleText: "Passez à la vitesse supérieure dès aujourd'hui.",
   },
   {
-    id: "Zephyr",
-    name: "Zephyr",
-    gender: "femme",
-    tone: "Empathique, douce & rassurante (Ultra-Réaliste)",
-    description: "Voix féminine profondément humaine et bienveillante, avec une respiration subtile et une sensibilité acoustique parfaite pour toucher le cœur.",
-    recommendedFor: ["Récit narratif", "Santé & Bien-être", "Service client VIP", "Guide audio", "Livre Audio"],
-    previewSampleText: "Prenez un instant pour respirer et découvrir une voix qui vous accompagne avec délicatesse et bienveillance.",
-    timbreProfile: "Soprano douce, rondeur acoustique, douceur respiratoire",
-    frequencyRange: "200 Hz - 7 kHz",
+    id: "Zephyr", name: "Zephyr", gender: "femme",
+    tone: "Empathique, douce et rassurante",
+    description: "Voix féminine bienveillante, respiration subtile, idéale pour toucher.",
+    recommendedFor: ["Récit", "Santé et bien-être", "Service client", "Guide audio", "Livre audio"],
+    previewSampleText: "Prenez un instant pour respirer et découvrir une voix qui vous accompagne.",
   },
   {
-    id: "Fenrir",
-    name: "Fenrir",
-    gender: "homme",
-    tone: "Profond, puissant & cinématique (Ultra-Réaliste)",
-    description: "Voix masculine grave, percutante et texturée avec une résonance de poitrine impressionnante, idéale pour les bandes-annonces et l'émotion épique.",
-    recommendedFor: ["Bandes-annonces cinéma", "Teasers événements", "Narration épique", "Manifesto de marque"],
-    previewSampleText: "Dans un monde en constante mutation, une seule voix a le pouvoir d'éveiller les consciences et de marquer les esprits.",
-    timbreProfile: "Baryton-basse chaleureux, résonance pectorale profonde, autorité naturelle",
-    frequencyRange: "85 Hz - 6.5 kHz",
+    id: "Fenrir", name: "Fenrir", gender: "homme",
+    tone: "Profond, puissant et cinématique",
+    description: "Voix masculine grave et texturée, idéale pour les bandes-annonces.",
+    recommendedFor: ["Bandes-annonces", "Teasers", "Narration épique", "Manifeste de marque"],
+    previewSampleText: "Dans un monde en constante mutation, une seule voix peut marquer les esprits.",
   },
   {
-    id: "Charon",
-    name: "Charon",
-    gender: "homme",
-    tone: "Posé, journalistique & d'autorité (Ultra-Réaliste)",
-    description: "Voix masculine équilibrée, sérieuse et rassurante avec une prosodie journalistique naturelle et une articulation analytique de référence.",
-    recommendedFor: ["Journal d'information", "Livre audio", "Rapports d'entreprise", "Vulgarisation scientifique"],
-    previewSampleText: "Voici une analyse approfondie et rigoureuse des grandes avancées qui façonnent notre avenir commun.",
-    timbreProfile: "Baryton équilibré, stabilité rythmique, articulation broadcast radio",
-    frequencyRange: "110 Hz - 7 kHz",
+    id: "Charon", name: "Charon", gender: "homme",
+    tone: "Posé, journalistique et sérieux",
+    description: "Voix masculine équilibrée, prosodie d'information et articulation précise.",
+    recommendedFor: ["Information", "Livre audio", "Rapports d'entreprise", "Vulgarisation"],
+    previewSampleText: "Voici une analyse rigoureuse des avancées qui façonnent notre avenir.",
   },
 ];
 
 const DEFAULT_SCRIPT =
   "Bienvenue dans ce tutoriel. <breath> Aujourd'hui, nous allons découvrir pas à pas comment maîtriser chaque fonctionnalité clé. [pause 0.4s] Prenez le temps d'observer les différentes options... et commençons dès maintenant par la première étape.";
+const DEFAULT_STYLE =
+  "Voix pédagogique claire, souriante et bienveillante. Diction soignée, respirations naturelles et pauses pour faciliter la mémorisation.";
+
+type Speaker = { name: string; voice: VoiceId; style: string };
+
+/* Stockage local tolérant aux erreurs (navigation privée, quota…). */
+const load = <T,>(key: string, fallback: T): T => {
+  try { const v = localStorage.getItem(key); return v ? (JSON.parse(v) as T) : fallback; } catch { return fallback; }
+};
+const save = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} };
+
+const isTyping = (t: EventTarget | null) => {
+  const el = t as HTMLElement | null;
+  return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || !!el.closest("[role=slider],[role=dialog]"));
+};
 
 export default function App() {
-  const [voices, setVoices] = useState<VoiceInfo[]>(INITIAL_VOICES);
-  const [presets, setPresets] = useState<StudioPreset[]>(() => {
-    try {
-      const saved = localStorage.getItem("voxstudio_custom_presets");
-      if (saved) {
-        const custom = JSON.parse(saved);
-        return [...STUDIO_PRESETS, ...custom];
-      }
-    } catch {}
-    return STUDIO_PRESETS;
+  /* ---------- Préférences et navigation ---------- */
+  const [view, setView] = useState<ViewId>(() => load<ViewId>("voxstudio_view", "studio"));
+  const [theme, setTheme] = useState<ThemePref>(() => {
+    try { const t = localStorage.getItem("voxstudio_theme"); return t === "light" || t === "dark" ? t : "system"; } catch { return "system"; }
   });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
+    try { theme === "system" ? localStorage.removeItem("voxstudio_theme") : localStorage.setItem("voxstudio_theme", theme); } catch {}
+  }, [theme]);
+  const navigate = useCallback((v: ViewId) => {
+    setView(v);
+    save("voxstudio_view", v);
+    window.scrollTo({ top: 0 });
+    requestAnimationFrame(() => document.getElementById("contenu")?.focus({ preventScroll: true }));
+  }, []);
 
-  // Default preset is Tutorial Pédagogique
-  const [activePresetId, setActivePresetId] = useState<string | null>("tutorial_elearning");
+  /* ---------- Données ---------- */
+  const [voices, setVoices] = useState<VoiceInfo[]>(INITIAL_VOICES);
+  const [presets] = useState<StudioPreset[]>(() => [...STUDIO_PRESETS, ...load<StudioPreset[]>("voxstudio_custom_presets", [])]);
+  const draft = load<{ script?: string; style?: string; dialogueMode?: boolean; voice?: string; presetId?: string | null; target?: TargetFormat }>("voxstudio_draft", {});
+  const [activePresetId, setActivePresetId] = useState<string | null>(draft.presetId === undefined ? "tutorial_elearning" : draft.presetId);
+  const [selectedVoice, setSelectedVoice] = useState<string>(draft.voice || "Kore");
+  const [script, setScript] = useState<string>(draft.script ?? DEFAULT_SCRIPT);
+  const [style, setStyle] = useState<string>(draft.style ?? DEFAULT_STYLE);
+  const [dialogueMode, setDialogueMode] = useState<boolean>(!!draft.dialogueMode);
+  const [target, setTarget] = useState<TargetFormat>(draft.target || "free");
+  const [modelMode, setModelMode] = useState<ModelMode>("flash-tts");
 
-  const [selectedVoice, setSelectedVoice] = useState<string>("Kore");
-  const [script, setScript] = useState<string>(DEFAULT_SCRIPT);
-  const [style, setStyle] = useState<string>(
-    "Voix pédagogique claire, souriante, bienveillante et didactique. Diction impeccable avec respirations naturelles douces et pauses réflexives pour faciliter la mémorisation."
-  );
-  // Default to flagship TTS model for peak hyper-realism
-  const [modelMode, setModelMode] = useState<"flash-lite" | "flash-tts">("flash-tts");
-
-  // Mode Dialogue State
-  const [dialogueMode, setDialogueMode] = useState(false);
-  const [speaker1Name, setSpeaker1Name] = useState("Alex");
-  const [speaker1Voice, setSpeaker1Voice] = useState<"Kore" | "Puck" | "Zephyr" | "Fenrir" | "Charon">("Puck");
-  const [speaker1Style, setSpeaker1Style] = useState("Dynamique et enthousiaste avec sourire dans la voix");
-
-  const [speaker2Name, setSpeaker2Name] = useState("Sam");
-  const [speaker2Voice, setSpeaker2Voice] = useState<"Kore" | "Puck" | "Zephyr" | "Fenrir" | "Charon">("Kore");
-  const [speaker2Style, setSpeaker2Style] = useState("Posée, complice, feutrée et bienveillante");
-
+  const [speakers, setSpeakers] = useState<[Speaker, Speaker]>([
+    { name: "Alex", voice: "Puck", style: "Dynamique et enthousiaste, sourire dans la voix" },
+    { name: "Sam", voice: "Kore", style: "Posée, complice et bienveillante" },
+  ]);
   const [dialogueLines, setDialogueLines] = useState<DialogueLine[]>([
-    {
-      id: "1",
-      speaker: "Alex",
-      voice: "Puck",
-      text: "Bienvenue dans VoxStudio ! Aujourd'hui on teste les réglages prédéfinis automatiques.",
-    },
-    {
-      id: "2",
-      speaker: "Sam",
-      voice: "Kore",
-      text: "Exactement Alex, <breath> un simple clic configure toute la cabine sonore pour un rendu d'une perfection absolue.",
-    },
+    { id: "1", speaker: "Alex", voice: "Puck", text: "Bienvenue dans VoxStudio ! Aujourd'hui on teste les préréglages." },
+    { id: "2", speaker: "Sam", voice: "Kore", text: "Exactement Alex, <breath> un clic suffit pour régler la voix, le ton et le mixage." },
   ]);
 
-  // Studio Settings (DSP, Hyper-Realism Acoustics & Mastering)
   const [studioSettings, setStudioSettings] = useState<StudioSettings>({
-    speed: 1.0,
-    eqPreset: "clarity",
-    reverbAmount: 0.06,
-    ambientTrack: "none",
-    ambientVolume: 0.15,
-    masteringEnabled: true,
-    studioCompression: true,
-    proximityWarmth: 0.35,
-    airClarity: 0.7,
-    deEsserSmooth: true,
-    hyperRealismProfile: "studio_pro",
-    hyperRealismLevel: "ultra_perfection",
+    speed: 1.0, eqPreset: "clarity", reverbAmount: 0.06, ambientTrack: "none", ambientVolume: 0.15,
+    masteringEnabled: true, studioCompression: true, proximityWarmth: 0.35, airClarity: 0.7, deEsserSmooth: true,
+    hyperRealismProfile: "studio_pro", hyperRealismLevel: "ultra_perfection",
   });
 
-  // Takes & Active audio
-  const [takes, setTakes] = useState<VoiceTake[]>(() => {
-    try {
-      const saved = localStorage.getItem("voxstudio_takes");
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [];
-  });
+  // Les prises restaurées n'ont plus d'audio (non conservé entre sessions) : on vide leur URL.
+  const [takes, setTakes] = useState<VoiceTake[]>(() => load<VoiceTake[]>("voxstudio_takes", []).map((t) => ({ ...t, audioUrl: "", audioBase64: "" })));
   const [activeTake, setActiveTake] = useState<VoiceTake | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playerRef = useRef<PlayerHandle>(null);
 
-  // UI state & Modals
+  /* ---------- Interface ---------- */
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState(false);
   const [isScriptDoctorOpen, setIsScriptDoctorOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [isKeysOpen, setIsKeysOpen] = useState(false);
   const [apiKeyCount, setApiKeyCount] = useState(() => activeKeys().length);
+  const [bannerHidden, setBannerHidden] = useState(() => load<boolean>("voxstudio_hide_key_banner", false));
+
+  const dismiss = useCallback((id: number) => setToasts((t) => t.filter((x) => x.id !== id)), []);
+  const notify = useCallback((kind: Toast["kind"], message: string, action?: Toast["action"]) => {
+    const id = Date.now() + Math.random();
+    setToasts((t) => [...t.slice(-2), { id, kind, message, action }]);
+    if (kind !== "error") setTimeout(() => dismiss(id), 4000);
+  }, [dismiss]);
+
   useEffect(() => {
     const sync = () => setApiKeyCount(activeKeys().length);
     window.addEventListener("voxstudio-keys", sync);
     return () => window.removeEventListener("voxstudio-keys", sync);
   }, []);
-  const [doctorMode, setDoctorMode] = useState<DoctorMode>("hyper-realism");
 
-  // Desktop Menu Shortcuts & Actions Integration
   useEffect(() => {
-    if (!window.voxStudioDesktop?.onMenuAction) return;
+    save("voxstudio_draft", { script, style, dialogueMode, voice: selectedVoice, presetId: activePresetId, target });
+  }, [script, style, dialogueMode, selectedVoice, activePresetId, target]);
 
-    const unbindTeleprompter = window.voxStudioDesktop.onMenuAction("open-teleprompter", () => {
-      setIsTeleprompterOpen(true);
-    });
-    const unbindDoctor = window.voxStudioDesktop.onMenuAction("open-script-doctor", () => {
-      setIsScriptDoctorOpen(true);
-    });
-    const unbindKeys = window.voxStudioDesktop.onMenuAction("open-api-keys", () => {
-      setIsKeysOpen(true);
-    });
-    const unbindHelp = window.voxStudioDesktop.onMenuAction("open-about-modal", () => {
-      setIsHelpOpen(true);
-    });
-
-    return () => {
-      unbindTeleprompter();
-      unbindDoctor();
-      unbindKeys();
-      unbindHelp();
-    };
-  }, []);
-
-  // Sync takes to localStorage
   useEffect(() => {
-    try {
-      const lightTakes = takes.slice(0, 10).map((t) => ({
-        ...t,
-        audioBase64: "",
-      }));
-      localStorage.setItem("voxstudio_takes", JSON.stringify(lightTakes));
-    } catch {}
+    save("voxstudio_takes", takes.slice(0, 20).map((t) => ({ ...t, audioBase64: "", audioUrl: "" })));
   }, [takes]);
 
-  // Fetch available voices on load
   useEffect(() => {
     fetch("/api/voice/voices")
       .then((res) => res.json())
-      .then((data) => {
-        if (data.voices && Array.isArray(data.voices)) {
-          setVoices(data.voices);
-        }
-      })
-      .catch((err) => console.log("Utilisation des voix par défaut:", err));
+      .then((data) => { if (Array.isArray(data.voices) && data.voices.length) setVoices(data.voices); })
+      .catch(() => {});
   }, []);
 
-  // 1-Click Preset Application Handler
-  const handleApplyPreset = (
-    preset: StudioPreset,
-    insertScript: boolean,
-    autoGenerate?: boolean
-  ) => {
+  // Menus de l'application desktop
+  useEffect(() => {
+    const d = window.voxStudioDesktop;
+    if (!d?.onMenuAction) return;
+    const off = [
+      d.onMenuAction("open-teleprompter", () => setIsTeleprompterOpen(true)),
+      d.onMenuAction("open-script-doctor", () => setIsScriptDoctorOpen(true)),
+      d.onMenuAction("open-api-keys", () => navigate("settings")),
+      d.onMenuAction("open-about-modal", () => navigate("settings")),
+    ];
+    return () => off.forEach((f) => f());
+  }, [navigate]);
+
+  /* ---------- Préréglages ---------- */
+  const handleApplyPreset = (preset: StudioPreset, insertScript: boolean) => {
     setActivePresetId(preset.id);
     setSelectedVoice(preset.recommendedVoice);
     setStyle(preset.stylePrompt);
-
-    const scriptToUse = insertScript ? preset.sampleScript : script;
-    if (insertScript) {
-      setScript(preset.sampleScript);
-    }
-
-    const updatedSettings: StudioSettings = {
-      ...studioSettings,
-      speed: preset.speed,
-      eqPreset: preset.eqPreset,
-      reverbAmount: preset.reverbAmount,
-      ambientTrack: preset.ambientTrack,
-      ambientVolume: preset.ambientVolume,
-      masteringEnabled: true,
-      studioCompression: preset.studioCompression,
-      proximityWarmth: preset.proximityWarmth,
-      airClarity: preset.airClarity,
-      hyperRealismProfile: preset.hyperRealismProfile,
-      hyperRealismLevel: "ultra_perfection",
-    };
-
-    setStudioSettings(updatedSettings);
-
-    setSuccessMessage(
-      `Paramètres prédéfinis "${preset.name}" appliqués avec succès ! (Voix ${preset.recommendedVoice}, EQ ${preset.eqPreset}, Profil ${preset.hyperRealismProfile})`
-    );
-    setTimeout(() => setSuccessMessage(null), 4000);
-
-    // If requested, trigger instant generation
-    if (autoGenerate) {
-      setTimeout(() => {
-        handleGenerateVoiceover({
-          textOverride: scriptToUse,
-          voiceOverride: preset.recommendedVoice,
-          styleOverride: preset.stylePrompt,
-          profileOverride: preset.hyperRealismProfile,
-        });
-      }, 50);
-    }
+    if (insertScript) setScript(preset.sampleScript);
+    setDialogueMode(false);
+    setStudioSettings((s) => ({
+      ...s,
+      speed: preset.speed, eqPreset: preset.eqPreset, reverbAmount: preset.reverbAmount, ambientTrack: preset.ambientTrack,
+      ambientVolume: preset.ambientVolume, masteringEnabled: true, studioCompression: preset.studioCompression,
+      proximityWarmth: preset.proximityWarmth, airClarity: preset.airClarity, hyperRealismProfile: preset.hyperRealismProfile,
+    }));
+    navigate("studio");
+    notify("success", `Préréglage « ${preset.name} » appliqué${insertScript ? " avec son texte d'exemple" : ""}.`);
   };
 
-  // Main Generation Handler
-  const handleGenerateVoiceover = async (overrides?: {
-    textOverride?: string;
-    voiceOverride?: string;
-    styleOverride?: string;
-    profileOverride?: string;
-  }) => {
-    const textToGenerate = overrides?.textOverride ?? script.trim();
-    if (!dialogueMode && !textToGenerate) {
-      setError("Veuillez saisir un script avant de générer la voix off.");
-      return;
-    }
+  /* ---------- Génération ---------- */
+  // Sans clé locale, on laisse tout de même essayer : le serveur peut avoir sa propre clé (.env).
+  const emptyReason = dialogueMode
+    ? dialogueLines.some((l) => l.text.trim()) ? null : "Ajoutez au moins une réplique pour générer."
+    : script.trim() ? null : "Écrivez un texte pour générer.";
 
-    const activeVoice = overrides?.voiceOverride ?? selectedVoice;
-    const activeStyle = overrides?.styleOverride ?? style;
-    const activeProfile = overrides?.profileOverride ?? studioSettings.hyperRealismProfile;
-
+  const handleGenerate = async () => {
+    if (isGenerating || emptyReason) return;
     setIsGenerating(true);
-    setError(null);
-    setSuccessMessage(null);
+    const base = { modelMode, style, hyperRealismLevel: studioSettings.hyperRealismLevel, hyperRealismProfile: studioSettings.hyperRealismProfile };
+    const payload = dialogueMode
+      ? {
+          ...base,
+          dialogueMode: true,
+          speakers: speakers.map((s) => ({ name: s.name, voice: s.voice, style: s.style, lines: dialogueLines.filter((l) => l.speaker === s.name && l.text.trim()) })),
+        }
+      : { ...base, text: script.trim(), voice: selectedVoice };
 
     try {
-      let payload: any = {
-        modelMode,
-        style: activeStyle,
-        hyperRealismLevel: studioSettings.hyperRealismLevel,
-        hyperRealismProfile: activeProfile,
-      };
-
-      if (dialogueMode) {
-        payload = {
-          ...payload,
-          dialogueMode: true,
-          speakers: [
-            {
-              name: speaker1Name,
-              voice: speaker1Voice,
-              style: speaker1Style,
-              lines: dialogueLines.filter((l) => l.speaker === speaker1Name),
-            },
-            {
-              name: speaker2Name,
-              voice: speaker2Voice,
-              style: speaker2Style,
-              lines: dialogueLines.filter((l) => l.speaker === speaker2Name),
-            },
-          ],
-        };
-      } else {
-        payload = {
-          ...payload,
-          text: textToGenerate,
-          voice: activeVoice,
-        };
-      }
-
-      const response = await apiFetch("/api/voice/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
+      const response = await apiFetch("/api/voice/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "Erreur lors de la synthèse vocale.");
+        throw new Error(errData.error || "La génération a échoué.");
       }
-
       const data = await response.json();
       const audioUrl = base64ToAudioUrl(data.audioBase64, data.mimeType || "audio/wav");
-
-      // Calculate audio duration
-      const tempAudio = new Audio(audioUrl);
-      tempAudio.onloadedmetadata = () => {
-        const audioDuration = tempAudio.duration || 5;
-
-        const activePresetObj = presets.find((p) => p.id === activePresetId);
-        const takeTitle = dialogueMode
-          ? `Duo ${speaker1Name} & ${speaker2Name}`
-          : activePresetObj
-          ? `[${activePresetObj.name}] Voix ${activeVoice}`
-          : `Voix ${activeVoice}`;
-
-        const newTake: VoiceTake = {
-          id: `${Date.now()}`,
-          timestamp: Date.now(),
-          title: takeTitle,
-          text: dialogueMode
-            ? dialogueLines.map((l) => `${l.speaker}: ${l.text}`).join(" | ")
-            : textToGenerate,
-          voice: dialogueMode ? `${speaker1Voice} & ${speaker2Voice}` : activeVoice,
-          style: data.style || activeStyle,
-          model: data.model || "gemini-3.8-flash-tts",
-          duration: audioDuration,
-          audioBase64: data.audioBase64,
-          audioUrl,
-          dspApplied: studioSettings.masteringEnabled,
-        };
-
-        setActiveTake(newTake);
-        setTakes((prev) => [newTake, ...prev]);
-        setSuccessMessage("Prise audio master hyper-réaliste générée avec succès !");
-        setTimeout(() => setSuccessMessage(null), 3500);
+      const duration = await new Promise<number>((resolve) => {
+        // Certains navigateurs ne chargent pas les métadonnées d'un Audio détaché : repli après 1,5 s.
+        const timer = setTimeout(() => resolve(0), 1500);
+        const a = new Audio();
+        a.preload = "metadata";
+        a.onloadedmetadata = () => { clearTimeout(timer); resolve(isFinite(a.duration) ? a.duration : 0); };
+        a.onerror = () => { clearTimeout(timer); resolve(0); };
+        a.src = audioUrl;
+      });
+      const preset = presets.find((p) => p.id === activePresetId);
+      const take: VoiceTake = {
+        id: `${Date.now()}`,
+        timestamp: Date.now(),
+        title: dialogueMode ? `Dialogue ${speakers[0].name} et ${speakers[1].name}` : preset ? `${preset.name} · ${selectedVoice}` : `Voix ${selectedVoice}`,
+        text: dialogueMode ? dialogueLines.map((l) => `${l.speaker} : ${l.text}`).join(" | ") : script.trim(),
+        voice: dialogueMode ? `${speakers[0].voice} et ${speakers[1].voice}` : selectedVoice,
+        style: data.style || style,
+        model: data.model || modelMode,
+        duration: duration || estimateReadingTime(script).seconds,
+        audioBase64: data.audioBase64,
+        audioUrl,
+        dspApplied: studioSettings.masteringEnabled,
       };
+      setTakes((prev) => [take, ...prev]);
+      setActiveTake(take);
+      playerRef.current?.playWhenReady();
+      notify("success", "Voix générée : lecture dans le lecteur en bas.");
     } catch (err: any) {
-      console.error(err);
-      setError(err?.message || "Impossible de générer la voix off. Vérifiez votre script.");
+      const msg: string = err?.message || "Impossible de générer la voix.";
+      const keyIssue = /cl[ée]|key|quota|429|api/i.test(msg) || !apiKeyCount;
+      notify("error", msg, keyIssue ? { label: "Vérifier mes clés API", onClick: () => navigate("settings") } : undefined);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Dialogue lines actions
-  const handleAddDialogueLine = (speaker: string) => {
-    const newLine: DialogueLine = {
-      id: `${Date.now()}`,
-      speaker,
-      voice: (speaker === speaker1Name ? speaker1Voice : speaker2Voice) as any,
-      text: "",
+  // Raccourcis globaux : Ctrl+Entrée (générer), Espace (lecture/pause hors saisie)
+  const genRef = useRef(handleGenerate);
+  genRef.current = handleGenerate;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        if (document.querySelector("[role=dialog]")) return;
+        e.preventDefault();
+        genRef.current();
+      } else if (e.code === "Space" && !e.repeat && !isTyping(e.target) && !(e.target as HTMLElement).closest?.("button,a")) {
+        e.preventDefault();
+        playerRef.current?.togglePlay();
+      }
     };
-    setDialogueLines((prev) => [...prev, newLine]);
-  };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
-  const handleUpdateDialogueLine = (id: string, text: string, lineStyle?: string) => {
-    setDialogueLines((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, text, style: lineStyle } : l))
-    );
-  };
-
-  const handleDeleteDialogueLine = (id: string) => {
-    setDialogueLines((prev) => prev.filter((l) => l.id !== id));
-  };
-
-  const handleLoadDialogueTemplate = (type: string) => {
-    if (type === "podcast") {
-      setSpeaker1Name("Alex");
-      setSpeaker1Voice("Puck");
-      setSpeaker1Style("Hôte tech curieux avec énergie communicative");
-
-      setSpeaker2Name("Sam");
-      setSpeaker2Voice("Kore");
-      setSpeaker2Style("Experte IA posée, diction veloutée");
-
-      setDialogueLines([
-        {
-          id: "1",
-          speaker: "Alex",
-          voice: "Puck",
-          text: "Bienvenue dans ce nouvel épisode ! <breath> Aujourd'hui, nous explorons la révolution des voix de synthèse hyper-réalistes.",
-        },
-        {
-          id: "2",
-          speaker: "Sam",
-          voice: "Kore",
-          text: "Merci Alex. En effet, |mhm| la fidélité acoustique atteint désormais le standard des studios broadcast professionnels les plus exigeants.",
-        },
-      ]);
-    } else {
-      setSpeaker1Name("Emma");
-      setSpeaker1Voice("Kore");
-      setSpeaker1Style("Dynamique, feutrée et convaincante");
-
-      setSpeaker2Name("Marc");
-      setSpeaker2Voice("Fenrir");
-      setSpeaker2Style("Solennel, profond et cinématique");
-
-      setDialogueLines([
-        {
-          id: "1",
-          speaker: "Emma",
-          voice: "Kore",
-          text: "Vous cherchiez l'outil idéal pour donner vie à vos projets vidéo avec un réalisme saisissant ?",
-        },
-        {
-          id: "2",
-          speaker: "Marc",
-          voice: "Fenrir",
-          text: "Ne cherchez plus. [pause 0.5s] La perfection sonore est désormais à portée de clic.",
-        },
-      ]);
+  /* ---------- Duo ---------- */
+  const changeSpeaker = (i: 0 | 1, patch: Partial<Speaker>) => {
+    const old = speakers[i];
+    const next = [...speakers] as [Speaker, Speaker];
+    next[i] = { ...old, ...patch };
+    setSpeakers(next);
+    if (patch.name !== undefined || patch.voice !== undefined) {
+      setDialogueLines((ls) => ls.map((l) => (l.speaker === old.name ? { ...l, speaker: next[i].name, voice: next[i].voice } : l)));
     }
   };
+  const addLine = (speaker: string) => {
+    const s = speakers.find((x) => x.name === speaker) || speakers[0];
+    setDialogueLines((prev) => [...prev, { id: `${Date.now()}`, speaker: s.name, voice: s.voice, text: "" }]);
+    requestAnimationFrame(() => {
+      const all = document.querySelectorAll<HTMLTextAreaElement>('textarea[id^="line-"]');
+      all[all.length - 1]?.focus();
+    });
+  };
+  const loadDialogueTemplate = (type: string) => {
+    const tpl: { s: [Speaker, Speaker]; lines: [string, string] } =
+      type === "podcast"
+        ? { s: [{ name: "Alex", voice: "Puck", style: "Hôte curieux, énergie communicative" }, { name: "Sam", voice: "Kore", style: "Experte posée, diction veloutée" }],
+            lines: ["Bienvenue dans ce nouvel épisode ! <breath> Aujourd'hui, on parle des voix de synthèse réalistes.", "Merci Alex. |mhm| La qualité atteint désormais celle des studios professionnels."] }
+        : { s: [{ name: "Emma", voice: "Kore", style: "Dynamique, feutrée et convaincante" }, { name: "Marc", voice: "Fenrir", style: "Solennel, profond et cinématique" }],
+            lines: ["Vous cherchiez l'outil idéal pour donner vie à vos vidéos ?", "Ne cherchez plus. [pause 0.5s] La voix parfaite est à portée de clic."] };
+    setSpeakers(tpl.s);
+    setDialogueLines(tpl.lines.map((text, i) => ({ id: `${Date.now()}-${i}`, speaker: tpl.s[i].name, voice: tpl.s[i].voice, text })));
+    notify("info", "Modèle de dialogue chargé.");
+  };
 
-  // Takes management
-  const handleDeleteTake = (id: string) => {
+  /* ---------- Prises ---------- */
+  const playTake = (t: VoiceTake) => {
+    if (!t.audioUrl) return;
+    if (activeTake?.id === t.id) { playerRef.current?.togglePlay(); return; }
+    setActiveTake(t);
+    playerRef.current?.playWhenReady();
+  };
+  const deleteTake = (id: string) => {
     setTakes((prev) => prev.filter((t) => t.id !== id));
-    if (activeTake?.id === id) {
-      setActiveTake(null);
+    if (activeTake?.id === id) setActiveTake(null);
+    notify("info", "Prise supprimée.");
+  };
+  const restoreTake = (t: VoiceTake) => {
+    if (t.text.includes(" | ") && /^[^:]+ : /.test(t.text)) {
+      notify("info", "Ce texte vient d'un dialogue : il a été copié dans le script solo.");
     }
+    setDialogueMode(false);
+    setScript(t.text);
+    if (t.style) setStyle(t.style);
+    navigate("studio");
   };
 
-  const handleToggleFavorite = (id: string) => {
-    setTakes((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, isFavorite: !t.isFavorite } : t))
-    );
-  };
+  /* ---------- Rendu ---------- */
+  const currentPreset = presets.find((p) => p.id === activePresetId);
+  const currentVoice = voices.find((v) => v.id === selectedVoice);
+  const estSeconds = dialogueMode
+    ? estimateReadingTime(dialogueLines.map((l) => l.text).join(" ")).seconds
+    : estimateReadingTime(script).seconds;
 
-  const handleRestoreScript = (restoredText: string, restoredStyle: string) => {
-    setScript(restoredText);
-    if (restoredStyle) setStyle(restoredStyle);
-  };
+  const modeSwitch = (
+    <Segmented
+      label="Mode d'écriture"
+      size="sm"
+      value={dialogueMode ? "duo" : "solo"}
+      onChange={(v) => setDialogueMode(v === "duo")}
+      options={[{ value: "solo", label: "Solo", icon: <User /> }, { value: "duo", label: "Duo", icon: <Users /> }]}
+    />
+  );
 
-  const currentActivePreset = presets.find((p) => p.id === activePresetId);
+  let page: React.ReactNode;
+  if (view === "presets") page = <PresetsView presets={presets} activePresetId={activePresetId} onApply={handleApplyPreset} isGenerating={isGenerating} />;
+  else if (view === "takes") page = (
+    <TakesView takes={takes} activeTakeId={activeTake?.id ?? null} isPlayingActive={isPlaying} onPlay={playTake} onDelete={deleteTake}
+      onToggleFavorite={(id) => setTakes((p) => p.map((t) => (t.id === id ? { ...t, isFavorite: !t.isFavorite } : t)))}
+      onRestore={restoreTake} onGoStudio={() => navigate("studio")} />
+  );
+  else if (view === "mix") page = <MixView settings={studioSettings} onChange={setStudioSettings} hasTake={!!activeTake?.audioUrl} />;
+  else if (view === "settings") page = <SettingsView theme={theme} onChangeTheme={setTheme} />;
+  else page = (
+    <StudioView
+      banner={apiKeyCount === 0 && !bannerHidden ? <KeyBanner onOpen={() => navigate("settings")} onDismiss={() => { setBannerHidden(true); save("voxstudio_hide_key_banner", true); }} /> : undefined}
+      editor={
+        dialogueMode ? (
+          <DialogueModeEditor speakers={speakers} onChangeSpeaker={changeSpeaker} lines={dialogueLines} onAddLine={addLine}
+            onUpdateLine={(id, text, s) => setDialogueLines((p) => p.map((l) => (l.id === id ? { ...l, text, style: s } : l)))}
+            onDeleteLine={(id) => setDialogueLines((p) => p.filter((l) => l.id !== id))}
+            onLoadDialogueTemplate={loadDialogueTemplate} modeSwitch={modeSwitch} />
+        ) : (
+          <ScriptEditor script={script} onChangeScript={setScript} style={style} onChangeStyle={setStyle}
+            onOpenDoctor={() => setIsScriptDoctorOpen(true)} onOpenTeleprompter={() => setIsTeleprompterOpen(true)}
+            isGenerating={isGenerating} selectedVoiceName={selectedVoice} modeSwitch={modeSwitch} onNotify={notify} />
+        )
+      }
+      voices={dialogueMode ? undefined : <VoiceSelector voices={voices} selectedVoice={selectedVoice} onSelectVoice={setSelectedVoice} disabled={isGenerating} />}
+      generate={
+        <GenerateCard
+          estSeconds={estSeconds} target={target} onChangeTarget={setTarget}
+          voiceLabel={dialogueMode ? `${speakers[0].voice} et ${speakers[1].voice}` : currentVoice?.name || selectedVoice}
+          presetName={dialogueMode ? undefined : currentPreset?.name}
+          modelMode={modelMode} onChangeModelMode={setModelMode}
+          onGenerate={handleGenerate} isGenerating={isGenerating} disabledReason={emptyReason}
+        />
+      }
+      recent={<RecentTakes takes={takes} activeTakeId={activeTake?.id ?? null} isPlayingActive={isPlaying} onPlay={playTake} onSeeAll={() => navigate("takes")} />}
+    />
+  );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
-      {/* Studio Header */}
-      <Header
-        dialogueMode={dialogueMode}
-        onToggleDialogueMode={(val) => setDialogueMode(val)}
-        onOpenTeleprompter={() => setIsTeleprompterOpen(true)}
-        onOpenScriptDoctor={(m) => { if (m) setDoctorMode(m); setIsScriptDoctorOpen(true); }}
-        onOpenHelp={() => setIsHelpOpen(true)}
-        onOpenApiKeys={() => setIsKeysOpen(true)}
-        apiKeyCount={apiKeyCount}
-        activeTakeCount={takes.length}
-        voices={voices}
-        selectedVoice={selectedVoice}
-        onSelectVoice={setSelectedVoice}
-        presets={presets}
-        activePresetId={activePresetId}
-        onApplyPreset={handleApplyPreset}
-      />
-
-      {/* Main Workspace Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        {/* Banner: Hyper-Realism Studio Engine & Current Active Preset Status */}
-        <div className="p-3.5 bg-gradient-to-r from-amber-500/15 via-zinc-900 to-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black text-zinc-100">
-                  Moteur Hyper-Réalisme Activé (Flagship 24kHz)
-                </span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-amber-500 text-zinc-950 font-black">
-                  Perfection Ultime
-                </span>
-                {currentActivePreset && (
-                  <span className="text-[10px] bg-zinc-800 border border-zinc-700 text-amber-300 font-mono font-bold px-2 py-0.5 rounded hidden sm:inline">
-                    Preset : {currentActivePreset.name}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-zinc-400">
-                Respirations physiologiques &lt;breath&gt;, micro-inflections humaines, effet de proximité micro studio Neumann et égalisation 32-bit.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                setStudioSettings((prev) => ({
-                  ...prev,
-                  hyperRealismLevel:
-                    prev.hyperRealismLevel === "ultra_perfection" ? "high" : "ultra_perfection",
-                }))
-              }
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all border cursor-pointer ${
-                studioSettings.hyperRealismLevel === "ultra_perfection"
-                  ? "bg-amber-500 text-zinc-950 border-amber-400 shadow-md shadow-amber-500/20"
-                  : "bg-zinc-900 text-zinc-400 border-zinc-800"
-              }`}
-            >
-              {studioSettings.hyperRealismLevel === "ultra_perfection"
-                ? "★ Perfectionnisme 100%"
-                : "Mode Standard"}
-            </button>
-          </div>
-        </div>
-
-        {/* Alerts / Feedback notification */}
-        {error && (
-          <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm rounded-xl flex items-center justify-between gap-3 animate-in fade-in">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-              <span>{error}</span>
-            </div>
-            <button
-              onClick={() => setError(null)}
-              className="text-rose-400 hover:text-rose-200 font-bold cursor-pointer"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm rounded-xl flex items-center gap-2 animate-in fade-in">
-            <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
-            <span>{successMessage}</span>
-          </div>
-        )}
-
-        {/* 1-Click Studio Presets Bar */}
-        {!dialogueMode && (
-          <StudioPresetsBar
-            presets={presets}
-            activePresetId={activePresetId}
-            onSelectPreset={handleApplyPreset}
-            currentSettings={studioSettings}
-            currentVoice={selectedVoice}
-            isGenerating={isGenerating}
+    <>
+      <AppShell
+        view={view}
+        onNavigate={navigate}
+        takeCount={takes.length}
+        hasKeys={apiKeyCount > 0}
+        player={
+          <PlayerDock
+            ref={playerRef}
+            audioUrl={activeTake?.audioUrl || null}
+            title={activeTake?.title || ""}
+            voiceName={activeTake?.voice || selectedVoice}
+            settings={studioSettings}
+            onChangeSpeed={(speed) => setStudioSettings((s) => ({ ...s, speed }))}
+            onNotify={notify}
+            onPlayingChange={setIsPlaying}
           />
-        )}
+        }
+      >
+        <div key={view} className="animate-fade-up">{page}</div>
+      </AppShell>
 
-        {/* Rangée 1 : script + lecteur */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-5 items-stretch">
-          <div className="scope-dark bg-zinc-950 rounded-[28px] p-5 space-y-4 min-w-0">
-            {dialogueMode ? (
-              <DialogueModeEditor
-                speaker1Name={speaker1Name}
-                setSpeaker1Name={setSpeaker1Name}
-                speaker1Voice={speaker1Voice}
-                setSpeaker1Voice={setSpeaker1Voice}
-                speaker1Style={speaker1Style}
-                setSpeaker1Style={setSpeaker1Style}
-                speaker2Name={speaker2Name}
-                setSpeaker2Name={setSpeaker2Name}
-                speaker2Voice={speaker2Voice}
-                setSpeaker2Voice={setSpeaker2Voice}
-                speaker2Style={speaker2Style}
-                setSpeaker2Style={setSpeaker2Style}
-                lines={dialogueLines}
-                onAddLine={handleAddDialogueLine}
-                onUpdateLine={handleUpdateDialogueLine}
-                onDeleteLine={handleDeleteDialogueLine}
-                onLoadDialogueTemplate={handleLoadDialogueTemplate}
-              />
-            ) : (
-              <ScriptEditor
-                script={script}
-                onChangeScript={setScript}
-                style={style}
-                onChangeStyle={setStyle}
-                onOpenDoctor={() => setIsScriptDoctorOpen(true)}
-                isGenerating={isGenerating}
-                selectedVoiceName={selectedVoice}
-              />
-            )}
+      <Toasts toasts={toasts} onDismiss={dismiss} />
 
-            
-            {/* Synthesis Launch Button */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleGenerateVoiceover()}
-                disabled={isGenerating || (!dialogueMode && !script.trim())}
-                className="flex-1 py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/20 transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Synthèse Vocale Hyper-Réaliste en Cours...</span>
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>
-                      Générer la Voix Off Studio (WAV 24kHz)
-                    </span>
-                  </>
-                )}
-              </button>
-
-              {/* Model Quality Switch */}
-              <div className="flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-xl p-1 text-xs font-mono text-zinc-400">
-                <button
-                  type="button"
-                  onClick={() => setModelMode("flash-tts")}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    modelMode === "flash-tts"
-                      ? "bg-amber-500 text-zinc-950 font-black shadow-sm"
-                      : "hover:text-zinc-200"
-                  }`}
-                  title="Gemini 3.8 Flash-TTS Flagship: Recommandé pour l'hyper-réalisme, respirations et prosodie vivante"
-                >
-                  Flagship TTS (Ultra)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModelMode("flash-lite")}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    modelMode === "flash-lite"
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold"
-                      : "hover:text-zinc-200"
-                  }`}
-                  title="Flash-Lite TTS: Synthèse rapide économique"
-                >
-                  Flash-Lite
-                </button>
-              </div>
-            </div>
-
-            
-          </div>
-          <div className="min-w-0">
-            {/* Audio Waveform Player with Live Web Audio DSP Chain */}
-            <AudioWaveformVisualizer
-              audioUrl={activeTake?.audioUrl || null}
-              audioBase64={activeTake?.audioBase64 || null}
-              voiceName={activeTake?.voice || selectedVoice}
-              styleDescription={activeTake?.style || style}
-              modelName={activeTake?.model || (modelMode === "flash-tts" ? "gemini-3.8-flash-tts (Flagship)" : "gemini-3.8-flash-lite-tts")}
-              settings={studioSettings}
-              onChangeSpeed={(spd) => setStudioSettings({ ...studioSettings, speed: spd })}
-            />
-
-            
-          </div>
-        </div>
-
-        {/* Rangée 2 : voix + prises */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-5 items-start">
-          {!dialogueMode && (
-            <div className="min-w-0">{/* Studio Rack Section: Voices Selection (Solo Mode) */}
-        
-          <div id="voix" className="scroll-mt-28"><VoiceSelector
-            voices={voices}
-            selectedVoice={selectedVoice}
-            onSelectVoice={(vId) => {
-              setSelectedVoice(vId);
-            }}
-            disabled={isGenerating}
-          /></div></div>
-          )}
-          <div className={`min-w-0 ${dialogueMode ? "lg:col-span-2" : ""}`}>
-            {/* History of Takes */}
-            <div id="prises" className="scroll-mt-28"><TakesHistory
-              takes={takes}
-              activeTakeId={activeTake?.id || null}
-              onSelectTake={(take) => setActiveTake(take)}
-              onDeleteTake={handleDeleteTake}
-              onToggleFavorite={handleToggleFavorite}
-              onRestoreScript={handleRestoreScript}
-            /></div>
-          
-          </div>
-        </div>
-
-        {/* Rangée 3 : rack de mastering */}
-        <div className="scope-dark bg-zinc-950 rounded-[28px] p-5">
-          {/* DSP Mastering Rack */}
-            <StudioDspRack
-              settings={studioSettings}
-              onChangeSettings={setStudioSettings}
-            />
-          
-        </div>
-      </main>
-
-      {/* Footer / Console bar */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 px-6 py-4 mt-auto text-xs text-zinc-500 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>VoxStudio Pro • Station de Travail Voix Off Hyper-Réaliste IA</span>
-        </div>
-        <div className="flex items-center gap-4 text-zinc-400">
-          <span>Moteur : Gemini 3.8 Flash TTS Flagship (24kHz Mono 16-bit RIFF)</span>
-          <span>•</span>
-          <span>Presets Intelligents 1-Clic : Tuto, Documentaire, Pub, Luxe, Storytelling...</span>
-        </div>
-      </footer>
-
-      {/* Teleprompter Modal */}
       <TeleprompterModal
         isOpen={isTeleprompterOpen}
         onClose={() => setIsTeleprompterOpen(false)}
         script={dialogueMode ? dialogueLines.map((l) => `${l.speaker} : ${l.text}`).join("\n\n") : script}
         speed={studioSettings.speed}
       />
-
-      {/* Script Doctor & Realism Coach Modal */}
       <ScriptDoctorModal
-        initialMode={doctorMode}
         isOpen={isScriptDoctorOpen}
         onClose={() => setIsScriptDoctorOpen(false)}
         script={script}
-        onApplyScript={(newText) => setScript(newText)}
+        onApplyScript={(t) => { setScript(t); notify("success", "Texte du coach appliqué."); }}
         selectedVoiceName={selectedVoice}
       />
-
-      <ApiKeysModal isOpen={isKeysOpen} onClose={() => setIsKeysOpen(false)} />
-
-      {/* Studio Help Modal */}
-      <StudioHelpModal
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
-    </div>
+    </>
   );
 }
