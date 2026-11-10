@@ -171,8 +171,33 @@ function createStudioMenu(win: BrowserWindow) {
     },
   ];
 
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+  if (isMac) {
+    // macOS : la barre de menus système est attendue (et nécessaire au copier-coller).
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    return;
+  }
+
+  // Windows / Linux : aucune barre de menus native, l'interface a sa propre navigation.
+  Menu.setApplicationMenu(null);
+  win.removeMenu();
+
+  // Les raccourcis des anciens menus restent disponibles au clavier.
+  win.webContents.on("before-input-event", (event, input) => {
+    if (input.type !== "keyDown") return;
+    const ctrl = input.control || input.meta;
+    const key = input.key.toLowerCase();
+    const send = (channel: string) => { event.preventDefault(); win.webContents.send(channel); };
+    if (ctrl && !input.shift && key === "n") return send("menu-new-session");
+    if (ctrl && !input.shift && key === "t") return send("open-teleprompter");
+    if (ctrl && !input.shift && key === "d") return send("open-script-doctor");
+    if (ctrl && !input.shift && key === "k") return send("open-api-keys");
+    if (key === "f11") { event.preventDefault(); win.setFullScreen(!win.isFullScreen()); return; }
+    if (ctrl && (key === "=" || key === "+")) { event.preventDefault(); win.webContents.setZoomLevel(win.webContents.getZoomLevel() + 0.5); return; }
+    if (ctrl && key === "-") { event.preventDefault(); win.webContents.setZoomLevel(win.webContents.getZoomLevel() - 0.5); return; }
+    if (ctrl && key === "0") { event.preventDefault(); win.webContents.setZoomLevel(0); return; }
+    if (isDev && (key === "f12" || (ctrl && input.shift && key === "i"))) { event.preventDefault(); win.webContents.toggleDevTools(); return; }
+    if (isDev && ctrl && key === "r") { event.preventDefault(); win.webContents.reload(); }
+  });
 }
 
 async function createMainWindow() {
