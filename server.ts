@@ -22,8 +22,18 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
-    console.log(`🎙️ VoxStudio Pro Hyper-Realism Server listening on port ${PORT}`);
+  const server = app.listen(PORT, () => {
+    console.log(`🎙️ VoxStudio Pro : serveur prêt sur http://localhost:${PORT}`);
+  });
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(
+        `\n❌ Le port ${PORT} est déjà utilisé (une autre instance de VoxStudio tourne sans doute).\n` +
+          `   Fermez-la, ou trouvez le processus avec : netstat -ano | findstr :${PORT}\n`
+      );
+      process.exit(1);
+    }
+    throw err;
   });
 }
 
