@@ -177,8 +177,9 @@ body {
 }
 
 .hero-card {
-  background: radial-gradient(120% 90% at 85% 0%, #2fa35c 0%, rgba(47, 163, 92, 0) 60%),
-    linear-gradient(160deg, #1f8a4c 0%, #14532d 100%);
+  /* Point le plus clair #1b7a43 : texte blanc à 5,4:1, blanc à 90 % au-dessus de 4,5:1. */
+  background: radial-gradient(120% 90% at 85% 0%, #1b7a43 0%, rgba(27, 122, 67, 0) 60%),
+    linear-gradient(160deg, #166b3a 0%, #0f3f22 100%);
   color: #ffffff;
 }
 

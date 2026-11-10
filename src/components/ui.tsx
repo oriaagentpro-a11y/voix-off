@@ -76,7 +76,7 @@ export const CardHeader: React.FC<{
         {icon && <IconChip tone={tone === "hero" ? "hero" : tone}>{icon}</IconChip>}
         <div className="min-w-0">
           <H id={id} className={cx("text-[16px] font-semibold leading-tight", tone === "hero" ? "text-white" : "text-ink")}>{title}</H>
-          {subtitle && <p className={cx("mt-0.5 text-[13px]", tone === "hero" ? "text-white/80" : "text-ink-2")}>{subtitle}</p>}
+          {subtitle && <p className={cx("mt-0.5 text-[13px]", tone === "hero" ? "text-white/90" : "text-ink-2")}>{subtitle}</p>}
         </div>
       </div>
       {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
@@ -181,7 +181,7 @@ export const Stat: React.FC<{ label: string; value: React.ReactNode; badge?: Rea
       </span>
       {badge}
     </div>
-    <div className={cx("mt-1 text-xs", onHero ? "text-white/80" : "text-ink-2")}>{label}</div>
+    <div className={cx("mt-1 text-xs", onHero ? "text-white/90" : "text-ink-2")}>{label}</div>
   </div>
 );
 
@@ -251,10 +251,10 @@ export function Segmented<T extends string>({
             onClick={() => onChange(o.value)}
             className={cx(
               "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full font-medium whitespace-nowrap transition-colors [&>svg]:h-4 [&>svg]:w-4",
-              size === "sm" ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-[13px]",
-              fullWidth && "flex-1",
+              size === "sm" ? "h-8 text-[13px]" : "h-9 text-[13px]",
+              fullWidth ? "min-w-0 flex-1 px-2" : size === "sm" ? "px-3" : "px-4",
               tone === "default" && (on ? "bg-ink text-bg" : "text-ink-2 hover:bg-surface-3 hover:text-ink"),
-              tone === "hero" && (on ? "bg-white text-[#14532d]" : "text-white/85 hover:text-white"),
+              tone === "hero" && (on ? "bg-white text-[#14532d]" : "text-white/90 hover:text-white"),
               tone === "dock" && (on ? "bg-dock-ink text-dock" : "text-dock-ink-2 hover:text-dock-ink")
             )}
           >

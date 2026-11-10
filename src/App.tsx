@@ -171,9 +171,16 @@ export default function App() {
       d.onMenuAction("open-script-doctor", () => setIsScriptDoctorOpen(true)),
       d.onMenuAction("open-api-keys", () => navigate("settings")),
       d.onMenuAction("open-about-modal", () => navigate("settings")),
+      d.onMenuAction("menu-new-session", () => {
+        setDialogueMode(false);
+        setScript("");
+        setActivePresetId(null);
+        navigate("studio");
+        notify("info", "Nouvelle session : le script est vide, vos prises restent dans l'historique.");
+      }),
     ];
     return () => off.forEach((f) => f());
-  }, [navigate]);
+  }, [navigate, notify]);
 
   /* ---------- Préréglages ---------- */
   const handleApplyPreset = (preset: StudioPreset, insertScript: boolean) => {

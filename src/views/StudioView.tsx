@@ -83,12 +83,11 @@ export const StudioView: React.FC<{
     {/* Ordre mobile : texte → générer → voix → prises. Sur grand écran, la colonne de droite reste collée. */}
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5">
       <div className="min-w-0 lg:col-start-1 lg:row-start-1">{editor}</div>
-      <aside aria-label="Génération" className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start lg:gap-5">
+      <aside aria-label="Génération" className="min-w-0 lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:self-start">
         {generate}
-        <div className="hidden lg:block">{recent}</div>
       </aside>
       {voices && <div className="min-w-0 lg:col-start-1 lg:row-start-2">{voices}</div>}
-      <div className="lg:hidden">{recent}</div>
+      <div className="min-w-0 lg:col-start-2 lg:row-start-2 lg:self-start">{recent}</div>
     </div>
   </>
 );

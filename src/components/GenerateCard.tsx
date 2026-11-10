@@ -60,7 +60,7 @@ export const GenerateCard: React.FC<GenerateCardProps> = ({
         valueText={t ? `${estSeconds} secondes estimées pour un format de ${t} secondes` : `${estSeconds} secondes estimées`}
       >
         <span className="tabular text-[34px] font-semibold leading-none">{fmtDuration(estSeconds)}</span>
-        <span className="mt-1 text-[13px] text-white/85">{t ? `durée estimée · cible ${t} s` : "durée estimée"}</span>
+        <span className="mt-1 text-[13px] text-white/90">{t ? `durée estimée · cible ${t} s` : "durée estimée"}</span>
       </Gauge>
 
       <div className="mt-2 flex min-h-6 justify-center">
@@ -87,22 +87,22 @@ export const GenerateCard: React.FC<GenerateCardProps> = ({
       {disabledReason ? (
         <p id="gen-reason" className="mt-2 text-center text-[13px] text-white/90">{disabledReason}</p>
       ) : (
-        <p id="gen-hint" className="mt-2 text-center text-xs text-white/75">Raccourci : Ctrl + Entrée</p>
+        <p id="gen-hint" className="mt-2 hidden text-center text-xs text-white/90 md:block">Raccourci : Ctrl + Entrée</p>
       )}
 
       <dl className="mt-5 grid grid-cols-2 gap-3 rounded-[16px] bg-black/20 p-3.5 text-[13px]">
         <div className="min-w-0">
-          <dt className="text-white/75">Voix</dt>
+          <dt className="text-white/90">Voix</dt>
           <dd className="truncate font-semibold">{voiceLabel}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-white/75">Préréglage</dt>
+          <dt className="text-white/90">Préréglage</dt>
           <dd className="truncate font-semibold">{presetName || "Aucun"}</dd>
         </div>
       </dl>
 
       <div className="mt-4 flex items-center justify-between gap-3">
-        <span id="model-label" className="text-[13px] text-white/85">Moteur</span>
+        <span id="model-label" className="text-[13px] text-white/90">Moteur</span>
         <Segmented
           label="Moteur de synthèse"
           tone="hero"

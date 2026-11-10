@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, Menu, MenuItemConstructorOptions } from "electron";
+import { app, BrowserWindow, shell, ipcMain, Menu, MenuItemConstructorOptions, nativeTheme } from "electron";
 import path from "path";
 import http from "http";
 import express from "express";
@@ -123,14 +123,14 @@ function createStudioMenu(win: BrowserWindow) {
       label: "Studio",
       submenu: [
         {
-          label: "Téléprompteur",
+          label: "Prompteur",
           accelerator: "CmdOrCtrl+T",
           click: () => {
             win.webContents.send("open-teleprompter");
           },
         },
         {
-          label: "Script Doctor IA",
+          label: "Coach IA",
           accelerator: "CmdOrCtrl+D",
           click: () => {
             win.webContents.send("open-script-doctor");
@@ -185,10 +185,10 @@ async function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 920,
-    minWidth: 1040,
-    minHeight: 700,
-    title: "VoxStudio Pro — Studio Voix Off IA",
-    backgroundColor: "#09090b", // Évite tout flash blanc au démarrage
+    minWidth: 960,
+    minHeight: 640,
+    title: "VoxStudio Pro — Studio de voix off",
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#0e0f0f" : "#f4f4f1", // Fond du thème courant : évite un flash au démarrage
     icon: iconPath,
     show: false, // Affichage progressif dès que le DOM est prêt
     webPreferences: {
